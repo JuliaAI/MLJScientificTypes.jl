@@ -1,9 +1,8 @@
-@testset "Finite and Infinite" begin
+@testset "(In)Finite" begin
     cv = categorical([:x, :y])
-    c = cv[1]
+    c  = cv[1]
     uv = categorical([:x, :y], ordered=true)
-    u = uv[1]
-
+    u  = uv[1]
     @test scitype((4, 4.5, c, u, "X")) == Tuple{
                        Count,Continuous,Multiclass{2},OrderedFactor{2},Textual}
 end
@@ -20,7 +19,6 @@ A = Any[2 4.5;
     @test scitype_union(Any[1]) == Count
     @test scitype_union([1, 2.0, "3"]) == Union{Continuous, Count, Textual}
 end
-
 
 @testset "elscitype" begin
     X = randn(5, 5)
@@ -181,7 +179,7 @@ end
     @test scitype_union(y) == Union{Missing,Multiclass{3}}
 end
 
-@testset "coercion works for arrays too" begin
+@testset "coerce arrays" begin
     A = rand(Int, 2, 3)
     z = rand(Char, 2, 3)
     y = Any[1.0 2; 3 4]
@@ -191,7 +189,7 @@ end
     @test scitype_union(coerce(y, Count)) === Count
 end
 
-@testset "coerce R->OF (MLJ)" begin
+@testset "Real->OF" begin
     v = [0.1, 0.2, 0.2, 0.3, missing, 0.1]
     w = [0.1, 0.2, 0.2, 0.3, 0.1]
     @test_logs((:warn, r"Trying to coerce from `Union{Missing,"),
@@ -201,7 +199,7 @@ end
     @test all(unique(cw) .== [0.1, 0.2, 0.3])
 end
 
-@testset "Any->Multiclass (MLJ)" begin
+@testset "Any->MC" begin
     v1 = categorical(Any[1,2,1,2,1,missing,2])
     v2 = Any[collect("aksldjfalsdjkfslkjdfalksjdf")...]
     @test_logs((:warn, r"Trying to coerce from `Any"),
@@ -233,7 +231,7 @@ end
     @test eltype(v2c) <: CategoricalValue{Char}
 end
 
-@testset "Cat->Count,Continuous (MLJ)" begin
+@testset "Cat->C" begin
     a = categorical(["a","b","a","b",missing])
     a1 = coerce(a, Union{Count,Missing})
     @test scitype_union(a1) == Union{Missing,Count}
@@ -253,7 +251,7 @@ end
 end
 
 # issue #62
-@testset "Type=>Type coerce" begin
+@testset "Type=>Type" begin
     X = (x=[1,2,1,2,5,1,0,7],
          y=[0,1,0,1,0,1,0,1],
          z=['a','b','a','b','a','a',missing,missing])

@@ -129,9 +129,9 @@ uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [[PrettyTables]]
 deps = ["Crayons", "Formatting", "Parameters", "Reexport", "Tables"]
-git-tree-sha1 = "2268242f037e0290e87d55c02060320c1d0d6b03"
+git-tree-sha1 = "a98edb4f57f236e649599efa68b5e78c43cb51e1"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "0.6.0"
+version = "0.8.0"
 
 [[Printf]]
 deps = ["Unicode"]

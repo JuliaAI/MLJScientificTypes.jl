@@ -1,22 +1,18 @@
 if VERSION ≥ v"1.3.0-"
-@testset "Coerce lazyarrays" begin
+@testset "Coerce Col2" begin
    X = Tables.table(ones(1_000, 2))
    tmp = tempname()
    CSV.write(tmp, X)
-
    data = CSV.read(tmp, threaded=true)
-
    # data.Column1 and data.Column2 are Column2 (as of CSV 5.19)
    @test startswith("$(typeof(data.Column1))", "CSV.Column2")
-
    dc = coerce(data, autotype(data, :discrete_to_continuous))
    @test scitype(dc) == Table{AbstractArray{Continuous,1}}
-
    rm(tmp)
 end
 end
 
-@testset "In place coercion" begin
+@testset "coerce!" begin
    df = DataFrame((x=ones(Int,5), y=ones(5)))
    @test scitype(df) == Table{Union{AbstractArray{Continuous,1}, AbstractArray{Count,1}}}
    coerce!(df, :x=>Continuous)

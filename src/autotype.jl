@@ -50,11 +50,11 @@ function _autotype(X, ::Val{:table}; only_changes::Bool=true,
     # go over each column and for each of them apply the rules in order
     # in which they were provided
     zipper = zip(sch.names, sch.types, sch.scitypes, Tables.eachcolumn(X))
-    for (name, type, scitype, col) in zipper
+    for (name, type, stype, col) in zipper
         # start with the data type and iterate over the rules to get
         # a suggested type, note that this loop is type unstable but it
         # doesn't really matter, there are few rules and sugg is fast
-        sugg_type = scitype
+        sugg_type = stype
         for rule in rules
             sugg_type = eval(:($rule($sugg_type, $col, $sch.nrows)))
         end
@@ -62,7 +62,7 @@ function _autotype(X, ::Val{:table}; only_changes::Bool=true,
         suggested_types[name] = sugg_type
         # check if the suggested type is different than the scitype
         # if so, push it to has_changed to aid an eventual filtering
-        if sugg_type != scitype
+        if sugg_type != stype
             push!(has_changed, name)
         end
     end

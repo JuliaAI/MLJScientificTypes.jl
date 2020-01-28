@@ -2,12 +2,10 @@ module MLJScientificTypes
 
 # Dependencies
 using ScientificTypes
-
 using Tables, CategoricalArrays, ColorTypes, PrettyTables
 
 # Exports
 export Table
-
 export categorical, coerce, coerce!, autotype
 
 # Re-exports from ScientificTypes
@@ -32,13 +30,14 @@ include("init.jl")
 # -------------------------------------------------------------
 # Includes
 
-include("table.jl")
 include("utils.jl")
 include("coerce.jl")
+include("autotype.jl")
 
-include("scitype/utils.jl")
-include("scitype/infinite.jl")
-include("scitype/finite.jl")
-include("scitype/images.jl")
+include("convention/utils.jl")
+include("convention/table.jl")
+include("convention/infinite.jl")
+include("convention/finite.jl")
+include("convention/images.jl")
 
 end # module

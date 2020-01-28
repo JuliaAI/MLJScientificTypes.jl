@@ -22,7 +22,7 @@ nobj_d = 4
 nobj_e = 4
 nobj_f = 3
 
-@testset "autotype-default" begin
+@testset "auto-default" begin
     # this is just with few_to_finite
     # -------------------------------
     # no missing
@@ -42,7 +42,7 @@ nobj_f = 3
     @test sugg_types[:f] == OrderedFactor
 end
 
-@testset "autotype-coercion" begin
+@testset "auto-coerce" begin
     X2c = coerce(X2, autotype(X2))
     @test schema(X2).scitypes == (Union{Missing, Unknown},  # a
                                  Continuous,                # b
@@ -64,7 +64,7 @@ end
     @test sugg_types[:f] == OrderedFactor
 end
 
-@testset "autotype-d2c" begin
+@testset "auto-d2c" begin
     sugg_types = autotype(X2; rules=(:discrete_to_continuous,))
     @test Set(keys(sugg_types)) == Set([:c, :e, :f])
     @test sugg_types[:c] == Continuous
@@ -78,13 +78,13 @@ end
     @test sugg_types[:f] == OrderedFactor
 end
 
-@testset "autotype-s2c" begin
+@testset "auto-s2c" begin
     sugg_types = autotype(X2; rules=(:string_to_multiclass,))
     @test Set(keys(sugg_types)) == Set([:a, :d])
     @test sugg_types[:a] == Union{Missing,Multiclass}
 end
 
-@testset "autotype of a table that is also an array" begin
+@testset "auto csvfile" begin
     X = (x=rand(4),)
     CSV.write("test.csv", X)
     file = CSV.file("test.csv")
@@ -96,85 +96,85 @@ end
 #### Detailed tests
 #######################
 
-@testset "autotype-utils" begin
-    @test S.nonmissing(Union{Missing,Real}) == Real
-    @test S.nonmissing(Real) == Real
-    @test S.nonmissing(Union{Missing,Multiclass}) == Multiclass
-    @test S.T_or_Union_Missing_T(Union{Missing,Real},Float64) == Union{Missing,Float64}
-    @test S.T_or_Union_Missing_T(Real, Float64) == Float64
-    @test S.sugg_finite(Union{Missing,Float64}) == OrderedFactor
-    @test S.sugg_finite(Union{Missing,String}) == Multiclass
-    @test S.sugg_finite(Float64) == OrderedFactor
-    @test S.sugg_finite(String) == Multiclass
-    @test S.sugg_finite(Char) == Multiclass
-    @test S.sugg_finite(Int) == OrderedFactor
+@testset "auto-utils" begin
+    @test MST.nonmissing(Union{Missing,Real}) == Real
+    @test MST.nonmissing(Real) == Real
+    @test MST.nonmissing(Union{Missing,Multiclass}) == Multiclass
+    @test MST.T_or_Union_Missing_T(Union{Missing,Real},Float64) == Union{Missing,Float64}
+    @test MST.T_or_Union_Missing_T(Real, Float64) == Float64
+    @test MST.sugg_finite(Union{Missing,Float64}) == OrderedFactor
+    @test MST.sugg_finite(Union{Missing,String}) == Multiclass
+    @test MST.sugg_finite(Float64) == OrderedFactor
+    @test MST.sugg_finite(String) == Multiclass
+    @test MST.sugg_finite(Char) == Multiclass
+    @test MST.sugg_finite(Int) == OrderedFactor
 end
 
-@testset ":string_to_multiclass" begin
+@testset "auto s2c2" begin
     n = nothing
     M = Missing
-    @test S.string_to_multiclass(Continuous, n, n) == Continuous
+    @test MST.string_to_multiclass(Continuous, n, n) == Continuous
     col = ('A', 'B', 'C')
-    @test S.string_to_multiclass(Textual, col, n) == Multiclass
+    @test MST.string_to_multiclass(Textual, col, n) == Multiclass
     col = ('A', 'B', 'C', missing)
-    @test S.string_to_multiclass(Textual, col, n) == Union{M,Multiclass}
+    @test MST.string_to_multiclass(Textual, col, n) == Union{M,Multiclass}
     col = (1, 2, 3, 4, 5)
-    @test S.string_to_multiclass(Textual, col, n) == Textual
+    @test MST.string_to_multiclass(Textual, col, n) == Textual
     col = (1, 2, 3, 4, 5, missing)
-    @test S.string_to_multiclass(Union{M,Textual}, col, n) == Union{M,Textual}
-    @test S.string_to_multiclass(Textual, col, n) == Textual
+    @test MST.string_to_multiclass(Union{M,Textual}, col, n) == Union{M,Textual}
+    @test MST.string_to_multiclass(Textual, col, n) == Textual
     col = ("aa", "bb", "cc")
-    @test S.string_to_multiclass(Multiclass, col, n) == Multiclass
-    @test S.string_to_multiclass(Textual, col, n) == Multiclass
+    @test MST.string_to_multiclass(Multiclass, col, n) == Multiclass
+    @test MST.string_to_multiclass(Textual, col, n) == Multiclass
     col = ("aa", "bb", "cc", missing)
-    @test S.string_to_multiclass(Union{M,Textual}, col, n) == Union{M,Multiclass}
-    @test S.string_to_multiclass(Textual, col, n) == Union{M,Multiclass}
+    @test MST.string_to_multiclass(Union{M,Textual}, col, n) == Union{M,Multiclass}
+    @test MST.string_to_multiclass(Textual, col, n) == Union{M,Multiclass}
 end
 
-@testset ":discrete_to_continuous" begin
+@testset "auto d2c2" begin
     n = nothing
     M = Missing
-    @test S.discrete_to_continuous(Integer, n, n) == Continuous
-    @test S.discrete_to_continuous(Real, n, n) == Real
-    @test S.discrete_to_continuous(Count, n, n) == Continuous
-    @test S.discrete_to_continuous(OrderedFactor, n, n) == OrderedFactor
-    @test S.discrete_to_continuous(Union{M,Integer}, n, n) == Union{M,Continuous}
-    @test S.discrete_to_continuous(Union{M,Real}, n, n) == Union{M,Real}
-    @test S.discrete_to_continuous(Union{M,Count}, n, n) == Union{M,Continuous}
-    @test S.discrete_to_continuous(Union{M,OrderedFactor}, n, n) == Union{M,OrderedFactor}
+    @test MST.discrete_to_continuous(Integer, n, n) == Continuous
+    @test MST.discrete_to_continuous(Real, n, n) == Real
+    @test MST.discrete_to_continuous(Count, n, n) == Continuous
+    @test MST.discrete_to_continuous(OrderedFactor, n, n) == OrderedFactor
+    @test MST.discrete_to_continuous(Union{M,Integer}, n, n) == Union{M,Continuous}
+    @test MST.discrete_to_continuous(Union{M,Real}, n, n) == Union{M,Real}
+    @test MST.discrete_to_continuous(Union{M,Count}, n, n) == Union{M,Continuous}
+    @test MST.discrete_to_continuous(Union{M,OrderedFactor}, n, n) == Union{M,OrderedFactor}
 end
 
-@testset ":few_to_finite" begin
+@testset "auto f2c2" begin
     n = nothing
     M = Missing
     # short return
-    @test S.few_to_finite(Multiclass, n, 0) == Multiclass
-    @test S.few_to_finite(OrderedFactor, n, 1) == OrderedFactor
-    @test S.few_to_finite(Union{M,Multiclass}, n, 0) == Union{M,Multiclass}
-    @test S.few_to_finite(Union{M,OrderedFactor}, n, 1) == Union{M,OrderedFactor}
+    @test MST.few_to_finite(Multiclass, n, 0) == Multiclass
+    @test MST.few_to_finite(OrderedFactor, n, 1) == OrderedFactor
+    @test MST.few_to_finite(Union{M,Multiclass}, n, 0) == Union{M,Multiclass}
+    @test MST.few_to_finite(Union{M,OrderedFactor}, n, 1) == Union{M,OrderedFactor}
     # apply
     col = Random.rand("abcd", 50)
     st  = scitype(col[1])
-    @test S.few_to_finite(st, col, length(col)) == Multiclass
+    @test MST.few_to_finite(st, col, length(col)) == Multiclass
     col = Random.rand([1,2,3], 50)
     st  = scitype(col[1])
-    @test S.few_to_finite(st, col, length(col)) == OrderedFactor
+    @test MST.few_to_finite(st, col, length(col)) == OrderedFactor
     col = Random.rand([1,2,3,4], 50)
     st = scitype(col[1])
-    @test S.few_to_finite(st, col, length(col)) == OrderedFactor
+    @test MST.few_to_finite(st, col, length(col)) == OrderedFactor
     col = Random.rand([true, false], 50)
     st = scitype(col[1])
-    @test S.few_to_finite(st, col, length(col)) == OrderedFactor
+    @test MST.few_to_finite(st, col, length(col)) == OrderedFactor
     col = randn(50)
     st = scitype(col[1])
-    @test S.few_to_finite(st, col, length(col)) == st
+    @test MST.few_to_finite(st, col, length(col)) == st
     col = Int.(ceil.(100*randn(100)))
     st = scitype(col[1])
-    @test S.few_to_finite(st, col, length(col)) == st
+    @test MST.few_to_finite(st, col, length(col)) == st
 end
 
 
-@testset "bool->OF" begin
+@testset "auto bool->OF" begin
     X = (v = [false, true, false, true, missing],
          z = [0, 1, 0, 1, 0])
     Xc = coerce(X, autotype(X))
@@ -183,7 +183,7 @@ end
 end
 
 
-@testset "Auto for Array" begin
+@testset "Auto array" begin
     X = ones(Int, 5, 5)
     @test autotype(X, (:discrete_to_continuous,)) == Continuous
     @test autotype(X, :discrete_to_continuous) == Continuous

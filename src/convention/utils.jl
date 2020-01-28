@@ -1,24 +1,24 @@
-scitype(::AbstractFloat,  ::MLJ) = Continuous
-scitype(::Integer,        ::MLJ) = Count
-scitype(::AbstractString, ::MLJ) = Textual
+ST.scitype(::AbstractFloat,  ::MLJ) = Continuous
+ST.scitype(::Integer,        ::MLJ) = Count
+ST.scitype(::AbstractString, ::MLJ) = Textual
 
 nlevels(c::Cat) = length(levels(c.pool))
 
-function scitype(c::Cat, ::MLJ)
+function ST.scitype(c::Cat, ::MLJ)
     nc = nlevels(c)
     return ifelse(c.pool.ordered, OrderedFactor{nc}, Multiclass{nc})
 end
 
-function scitype(A::CArr{T,N}, ::MLJ) where {T,N}
+function ST.scitype(A::CArr{T,N}, ::MLJ) where {T,N}
     nlevels = length(levels(A))
     S = ifelse(isordered(A), OrderedFactor{nlevels}, Multiclass{nlevels})
     T >: Missing && (S = Union{S,Missing})
     return AbstractArray{S,N}
 end
 
-Scitype(::Type{<:Integer},        ::MLJ) = Count
-Scitype(::Type{<:AbstractFloat},  ::MLJ) = Continuous
-Scitype(::Type{<:AbstractString}, ::MLJ) = Textual
+ST.Scitype(::Type{<:Integer},        ::MLJ) = Count
+ST.Scitype(::Type{<:AbstractFloat},  ::MLJ) = Continuous
+ST.Scitype(::Type{<:AbstractString}, ::MLJ) = Textual
 
 ## Helper functions
 

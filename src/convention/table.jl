@@ -42,7 +42,7 @@ scitype(X) <: MLJBase.Table(Union{Continuous, Missing}, Count) # true
 struct Table{K} <: Known end
 
 function Table(Ts...)
-    if Union{Ts...} <: Scientific
+    if !(Union{Ts...} <: Scientific)
         error("Arguments of Table scitype constructor "*
               "must be scientific types. ")
     end
