@@ -1,6 +1,6 @@
 # Last run: 7/1/2020
 
-using ScientificTypes, DataFrames, Random
+using MLJScientificTypes, DataFrames, Random
 
 function foo()
     r = rand()
