@@ -42,7 +42,7 @@ function coerce end
 
 function coerce(X, types_dict::AbstractDict; kw...)
     isempty(types_dict) && return X
-    trait(X) == :table || error("Non-tabular data encountered.")
+    ST.trait(X) == :table || error("Non-tabular data encountered.")
     names  = schema(X).names
     X_ct   = Tables.columntable(X)
     ct_new = (_coerce_col(X_ct, col, types_dict; kw...) for col in names)

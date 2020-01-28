@@ -1,4 +1,4 @@
-using Test, MLJScientificTypes, Random
+using Test, ScientificTypes, MLJScientificTypes, Random
 using Tables, CategoricalArrays, CSV, DataFrames, ColorTypes
 
 const MST  = MLJScientificTypes
