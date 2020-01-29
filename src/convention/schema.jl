@@ -23,7 +23,7 @@ end
 # Add a nicer show functionality to `ScientificTypes.Schema` using
 # Tables and PrettyTables
 function Base.show(io::IO, ::MIME"text/plain", s::ScientificTypes.Schema)
-    data   = Tables.matrix((
+    data = Tables.matrix((
                 names=collect(s.names),
                 types=collect(s.types),
                 scitypes=collect(s.scitypes)
