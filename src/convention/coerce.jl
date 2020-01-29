@@ -84,7 +84,7 @@ function coerce(y::Arr{Any}, T::Type{<:Union{Missing,C}};
                 verbosity=1, tight::Bool=false
                 ) where C <: Union{Count,Continuous}
     # to float or to count?
-    op, num   = ifelse(C == Count, (_int, "65"), (_float, "65.0"))
+    op, num   = ifelse(C == Count, (_int, "65"), (float, "65.0"))
     has_chars = findfirst(e -> isa(e, Char), y) !== nothing
     if has_chars && verbosity > 0
         @warn "Char value encountered, such value will be coerced according to the corresponding numeric value (e.g. 'A' to $num)."
@@ -133,9 +133,6 @@ _int(::Missing)  = missing
 _int(x::Integer) = x
 _int(x::Cat)     = CategoricalArrays.order(x.pool)[x.level]
 _int(x)          = Int(x) # NOTE: may throw InexactError
-
-_float(y::Cat) = float(_int(y))
-_float(y)      = float(y)
 
 function _check_eltype(y, T, verb)
     E = eltype(y)

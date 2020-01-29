@@ -64,14 +64,14 @@ For an iterable, you can use `scitype_union` which gives you the tightest union
 of scitypes corresponding to the elements:
 
 ```@example 1
-scitype_union((ifelse(isodd(i), i, missing) for i in 1:5]))
+scitype_union((ifelse(isodd(i), i, missing) for i in 1:5))
 ```
 
 note that `scitype_union` has to go over all elements which is slow whereas
 `scitype` and `elscitype` can often be immediately returned upon inspection of  
 the machine type.
 
-### Type coercion work-flow for tabular data
+## Type coercion for tabular data
 
 The standard workflow involves the following two steps:
 
@@ -127,16 +127,12 @@ supported).
 
 ## Notes
 
-- We regard the built-in Julia type `Missing` as a scientific type. The new
-scientific types introduced in the current package are rooted in the abstract
-type `Found` (see tree above).
-- `Finite{N}`, `Multiclass{N}` and `OrderedFactor{N}` are all parametrised by
-the number of levels `N`. We export the alias `Binary = Finite{2}`.
-- `Image{W,H}`, `GrayImage{W,H}` and `ColorImage{W,H}` are all parametrised by
-the image width and height dimensions, `(W, H)`.
+- We regard the built-in Julia type `Missing` as a scientific type. The new scientific types introduced in the current package are rooted in the abstract type `Found` (see tree above).
+- `Finite{N}`, `Multiclass{N}` and `OrderedFactor{N}` are all parametrised by the number of levels `N`. We export the alias `Binary = Finite{2}`.
+- `Image{W,H}`, `GrayImage{W,H}` and `ColorImage{W,H}` are all parametrised by the image width and height dimensions, `(W, H)`.
 - The function `scitype` has the fallback value `Unknown`.
 
-## Special note on binary data
+### Special note on binary data
 
 MLJScientificTypes does not define a separate "binary" scientific
 type. Rather, when binary data has an intrinsic "true" class (for example
@@ -176,7 +172,7 @@ w = coerce(v, Union{Missing,Multiclass})
 elscitype(w)
 ```
 
-### Working with tables
+## Working with tables
 
 ```@example 4
 using MLJScientificTypes # hide
@@ -208,7 +204,7 @@ data = coerce(data, :z=>OrderedFactor)
 scitype(data) <: Table(Continuous,Count,OrderedFactor)
 ```
 
-### The scientific type of tuples, arrays and tables
+## Tuples, arrays and tables
 
 **Important Definition 1** Under any convention, the scitype of a tuple is a
 `Tuple` type parametrised by scientific types:
@@ -309,9 +305,14 @@ any table type `T` supported by Tables.jl | `Table{K}` where `K=Union{column_sci
 Here `nlevels(x) = length(levels(x.pool))`.
 
 
-## Automatic type conversion for tabular data
+## Automatic type conversion
 
-The `autotype` function allows to use specific rules in order to guess appropriate scientific types for the data. Such rules would typically be more constraining than the ones implied by the active convention. When `autotype` is used, a dictionary of suggested types is returned for each column in the data; if none of the specified rule applies, the ambient convention is used as "fallback".
+The `autotype` function allows to use specific rules in order to guess
+appropriate scientific types for *tabular* data. Such rules would typically be
+more constraining than the ones implied by the active convention. When
+`autotype` is used, a dictionary of suggested types is returned for each column
+in the data; if none of the specified rule applies, the ambient convention is
+used as "fallback".
 
 The function is called as:
 
