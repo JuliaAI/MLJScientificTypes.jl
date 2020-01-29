@@ -5,7 +5,7 @@
 | [![Build Status](https://travis-ci.org/alan-turing-institute/MLJScientificTypes.jl.svg?branch=master)](https://travis-ci.org/alan-turing-institute/MLJScientificTypes.jl) | [![codecov.io](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl/coverage.svg?branch=master)](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl?branch=master) |
 
 Implementation of the MLJ convention for [Scientific Types](https://github.com/alan-turing-institute/ScientificTypes.jl).
-Scientific Types makes the distinction between **machine type** and
+Scientific Types allow the distinction between **machine type** and
 **scientific type**:
 
 * the _machine type_ is a Julia type the data is currently encoded as (for instance: `Float64`)
