@@ -3,7 +3,7 @@ Functionalities supporting the schema of `X` when `X` is a `Tables.jl`
 compatible table.
 =#
 
-function ScientificTypes.schema(X, ::Val{:table}; kw...)
+function ST.schema(X, ::Val{:table}; kw...)
     sch    = Tables.schema(X)
     Xcol   = Tables.columntable(X)
     names  = sch.names
@@ -20,9 +20,11 @@ function _nrows(X)
     return length(cols[1])
 end
 
-# Add a nicer show functionality to `ScientificTypes.Schema` using
+ST.info(X, ::Val{:table}) = schema(X)
+
+# Add a nicer show functionality to `ST.Schema` using
 # Tables and PrettyTables
-function Base.show(io::IO, ::MIME"text/plain", s::ScientificTypes.Schema)
+function Base.show(io::IO, ::MIME"text/plain", s::ST.Schema)
     data = Tables.matrix((
                 names=collect(s.names),
                 types=collect(s.types),
@@ -35,5 +37,3 @@ function Base.show(io::IO, ::MIME"text/plain", s::ScientificTypes.Schema)
                  alignment=:l)
     println(io, "_.nrows = $(s.nrows)")
 end
-
-ScientificTypes.info(X, ::Val{:table}) = schema(X)

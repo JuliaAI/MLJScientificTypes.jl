@@ -2,6 +2,8 @@
 
 Implementation of the MLJ convention for [Scientific Types](https://github.com/alan-turing-institute/ScientificTypes.jl).
 
+BELOW IS STALE README
+
 
 ## Very quick start
 

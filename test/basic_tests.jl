@@ -93,7 +93,7 @@ end
     @test scitype_union(X_coerced.x) === Continuous
     @test scitype_union(X_coerced.z) <: Multiclass
     @test !X_coerced.z.pool.ordered
-    @test_throws MethodError coerce(["a", "b", "c"], Count)
+    @test_throws MLJScientificTypes.CoercionError coerce(["a", "b", "c"], Count)
 
     y = collect(Float64, 1:5)
     y_coerced = coerce(y, Count)

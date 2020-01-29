@@ -38,11 +38,13 @@ Xc = coerce(X, Count=>Continuous)
 schema(Xfixed).scitypes # (Continuous, Continuous, Continuous)
 ```
 """
-function coerce end
+coerce(X, a...; kw...) = coerce(Val(ST.trait(X)),  X, a...; kw...)
 
-function coerce(X, types_dict::AbstractDict; kw...)
+coerce(::Val{:other}, X, a...; kw...) =
+    throw(CoercionError("`coerce` is undefined for non-tabular data."))
+
+function coerce(::Val{:table}, X, types_dict::AbstractDict; kw...)
     isempty(types_dict) && return X
-    ScientificTypes.trait(X) == :table || error("Non-tabular data encountered.")
     names  = schema(X).names
     X_ct   = Tables.columntable(X)
     ct_new = (_coerce_col(X_ct, col, types_dict; kw...) for col in names)
@@ -50,11 +52,11 @@ function coerce(X, types_dict::AbstractDict; kw...)
 end
 
 # allow passing pairs like :feature1=>Continuous
-coerce(X, types_pairs::Pair{Symbol,<:Type}...; kw...) =
-    coerce(X, Dict(types_pairs); kw...)
+coerce(::Val{:table}, X, type_pairs::Pair{Symbol,<:Type}...; kw...) =
+    coerce(X, Dict(type_pairs); kw...)
 
 # allow passing rules like Count=>Continuous
-function coerce(X, types_pairs::Pair{<:Type,<:Type}...; kw...)
+function coerce(::Val{:table}, X, types_pairs::Pair{<:Type,<:Type}...; kw...)
     from_types = [tp.first  for tp in types_pairs]
     to_types   = [tp.second for tp in types_pairs]
     types_dict = Dict{Symbol,Type}()
@@ -72,6 +74,10 @@ end
 
 # -------------------------------------------------------------
 # utilities for coerce
+
+struct CoercionError <: Exception
+    m::String
+end
 
 function _coerce_col(X, name, types_dict::AbstractDict; kw...)
     y = getproperty(X, name)
