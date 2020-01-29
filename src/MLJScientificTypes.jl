@@ -9,6 +9,9 @@ export Table
 export categorical, coerce, coerce!, autotype
 
 # Re-exports from ScientificTypes
+export Scientific, Found, Unknown, Known, Finite, Infinite,
+       OrderedFactor, Multiclass, Count, Continuous, Textual,
+       Binary, ColorImage, GrayImage
 export scitype, scitype_union, elscitype, schema, info, nonmissing
 
 # -------------------------------------------------------------

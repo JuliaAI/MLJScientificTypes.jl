@@ -28,7 +28,7 @@ function Base.show(io::IO, ::MIME"text/plain", s::ST.Schema)
     data = Tables.matrix((
                 names=collect(s.names),
                 types=collect(s.types),
-                scitypes=collect(s.scitypes)
+                scitypes=collect(s.scitypes) # .|> _compact_scitype
                 ))
     header = ["_.names", "_.types", "_.scitypes"]
     println(io, "_.table = ")

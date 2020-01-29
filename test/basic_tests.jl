@@ -247,7 +247,7 @@ end
     @test all(coerce(y, Count) .== [9, 6, 8, 1, 10, 5, 4, 7, 3, 2])
 
     y = categorical([1:10..., missing, 11], ordered=true)
-    @test all(skipmissing(coerce(y, Union{Continuous, Missing}) .== float.([1:10...,missing,11])))
+    @test all(skipmissing(coerce(y, Union{Continuous, Missing}) .== float([1:10...,missing,11])))
 end
 
 # issue #62
