@@ -97,80 +97,80 @@ end
 #######################
 
 @testset "auto-utils" begin
-    @test MST.nonmissing(Union{Missing,Real}) == Real
-    @test MST.nonmissing(Real) == Real
-    @test MST.nonmissing(Union{Missing,Multiclass}) == Multiclass
-    @test MST.T_or_Union_Missing_T(Union{Missing,Real},Float64) == Union{Missing,Float64}
-    @test MST.T_or_Union_Missing_T(Real, Float64) == Float64
-    @test MST.sugg_finite(Union{Missing,Float64}) == OrderedFactor
-    @test MST.sugg_finite(Union{Missing,String}) == Multiclass
-    @test MST.sugg_finite(Float64) == OrderedFactor
-    @test MST.sugg_finite(String) == Multiclass
-    @test MST.sugg_finite(Char) == Multiclass
-    @test MST.sugg_finite(Int) == OrderedFactor
+    @test MLJScientificTypes.nonmissing(Union{Missing,Real}) == Real
+    @test MLJScientificTypes.nonmissing(Real) == Real
+    @test MLJScientificTypes.nonmissing(Union{Missing,Multiclass}) == Multiclass
+    @test MLJScientificTypes.T_or_Union_Missing_T(Union{Missing,Real},Float64) == Union{Missing,Float64}
+    @test MLJScientificTypes.T_or_Union_Missing_T(Real, Float64) == Float64
+    @test MLJScientificTypes.sugg_finite(Union{Missing,Float64}) == OrderedFactor
+    @test MLJScientificTypes.sugg_finite(Union{Missing,String}) == Multiclass
+    @test MLJScientificTypes.sugg_finite(Float64) == OrderedFactor
+    @test MLJScientificTypes.sugg_finite(String) == Multiclass
+    @test MLJScientificTypes.sugg_finite(Char) == Multiclass
+    @test MLJScientificTypes.sugg_finite(Int) == OrderedFactor
 end
 
 @testset "auto s2c2" begin
     n = nothing
     M = Missing
-    @test MST.string_to_multiclass(Continuous, n, n) == Continuous
+    @test MLJScientificTypes.string_to_multiclass(Continuous, n, n) == Continuous
     col = ('A', 'B', 'C')
-    @test MST.string_to_multiclass(Textual, col, n) == Multiclass
+    @test MLJScientificTypes.string_to_multiclass(Textual, col, n) == Multiclass
     col = ('A', 'B', 'C', missing)
-    @test MST.string_to_multiclass(Textual, col, n) == Union{M,Multiclass}
+    @test MLJScientificTypes.string_to_multiclass(Textual, col, n) == Union{M,Multiclass}
     col = (1, 2, 3, 4, 5)
-    @test MST.string_to_multiclass(Textual, col, n) == Textual
+    @test MLJScientificTypes.string_to_multiclass(Textual, col, n) == Textual
     col = (1, 2, 3, 4, 5, missing)
-    @test MST.string_to_multiclass(Union{M,Textual}, col, n) == Union{M,Textual}
-    @test MST.string_to_multiclass(Textual, col, n) == Textual
+    @test MLJScientificTypes.string_to_multiclass(Union{M,Textual}, col, n) == Union{M,Textual}
+    @test MLJScientificTypes.string_to_multiclass(Textual, col, n) == Textual
     col = ("aa", "bb", "cc")
-    @test MST.string_to_multiclass(Multiclass, col, n) == Multiclass
-    @test MST.string_to_multiclass(Textual, col, n) == Multiclass
+    @test MLJScientificTypes.string_to_multiclass(Multiclass, col, n) == Multiclass
+    @test MLJScientificTypes.string_to_multiclass(Textual, col, n) == Multiclass
     col = ("aa", "bb", "cc", missing)
-    @test MST.string_to_multiclass(Union{M,Textual}, col, n) == Union{M,Multiclass}
-    @test MST.string_to_multiclass(Textual, col, n) == Union{M,Multiclass}
+    @test MLJScientificTypes.string_to_multiclass(Union{M,Textual}, col, n) == Union{M,Multiclass}
+    @test MLJScientificTypes.string_to_multiclass(Textual, col, n) == Union{M,Multiclass}
 end
 
 @testset "auto d2c2" begin
     n = nothing
     M = Missing
-    @test MST.discrete_to_continuous(Integer, n, n) == Continuous
-    @test MST.discrete_to_continuous(Real, n, n) == Real
-    @test MST.discrete_to_continuous(Count, n, n) == Continuous
-    @test MST.discrete_to_continuous(OrderedFactor, n, n) == OrderedFactor
-    @test MST.discrete_to_continuous(Union{M,Integer}, n, n) == Union{M,Continuous}
-    @test MST.discrete_to_continuous(Union{M,Real}, n, n) == Union{M,Real}
-    @test MST.discrete_to_continuous(Union{M,Count}, n, n) == Union{M,Continuous}
-    @test MST.discrete_to_continuous(Union{M,OrderedFactor}, n, n) == Union{M,OrderedFactor}
+    @test MLJScientificTypes.discrete_to_continuous(Integer, n, n) == Continuous
+    @test MLJScientificTypes.discrete_to_continuous(Real, n, n) == Real
+    @test MLJScientificTypes.discrete_to_continuous(Count, n, n) == Continuous
+    @test MLJScientificTypes.discrete_to_continuous(OrderedFactor, n, n) == OrderedFactor
+    @test MLJScientificTypes.discrete_to_continuous(Union{M,Integer}, n, n) == Union{M,Continuous}
+    @test MLJScientificTypes.discrete_to_continuous(Union{M,Real}, n, n) == Union{M,Real}
+    @test MLJScientificTypes.discrete_to_continuous(Union{M,Count}, n, n) == Union{M,Continuous}
+    @test MLJScientificTypes.discrete_to_continuous(Union{M,OrderedFactor}, n, n) == Union{M,OrderedFactor}
 end
 
 @testset "auto f2c2" begin
     n = nothing
     M = Missing
     # short return
-    @test MST.few_to_finite(Multiclass, n, 0) == Multiclass
-    @test MST.few_to_finite(OrderedFactor, n, 1) == OrderedFactor
-    @test MST.few_to_finite(Union{M,Multiclass}, n, 0) == Union{M,Multiclass}
-    @test MST.few_to_finite(Union{M,OrderedFactor}, n, 1) == Union{M,OrderedFactor}
+    @test MLJScientificTypes.few_to_finite(Multiclass, n, 0) == Multiclass
+    @test MLJScientificTypes.few_to_finite(OrderedFactor, n, 1) == OrderedFactor
+    @test MLJScientificTypes.few_to_finite(Union{M,Multiclass}, n, 0) == Union{M,Multiclass}
+    @test MLJScientificTypes.few_to_finite(Union{M,OrderedFactor}, n, 1) == Union{M,OrderedFactor}
     # apply
     col = Random.rand("abcd", 50)
     st  = scitype(col[1])
-    @test MST.few_to_finite(st, col, length(col)) == Multiclass
+    @test MLJScientificTypes.few_to_finite(st, col, length(col)) == Multiclass
     col = Random.rand([1,2,3], 50)
     st  = scitype(col[1])
-    @test MST.few_to_finite(st, col, length(col)) == OrderedFactor
+    @test MLJScientificTypes.few_to_finite(st, col, length(col)) == OrderedFactor
     col = Random.rand([1,2,3,4], 50)
     st = scitype(col[1])
-    @test MST.few_to_finite(st, col, length(col)) == OrderedFactor
+    @test MLJScientificTypes.few_to_finite(st, col, length(col)) == OrderedFactor
     col = Random.rand([true, false], 50)
     st = scitype(col[1])
-    @test MST.few_to_finite(st, col, length(col)) == OrderedFactor
+    @test MLJScientificTypes.few_to_finite(st, col, length(col)) == OrderedFactor
     col = randn(50)
     st = scitype(col[1])
-    @test MST.few_to_finite(st, col, length(col)) == st
+    @test MLJScientificTypes.few_to_finite(st, col, length(col)) == st
     col = Int.(ceil.(100*randn(100)))
     st = scitype(col[1])
-    @test MST.few_to_finite(st, col, length(col)) == st
+    @test MLJScientificTypes.few_to_finite(st, col, length(col)) == st
 end
 
 

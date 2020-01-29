@@ -48,35 +48,3 @@ function Table(Ts...)
     end
     return Table{<:Union{[AbstractVector{<:T} for T in Ts]...}}
 end
-
-# Implementation of scitype for :table trait
-
-function ST.scitype(X, ::Convention, ::Val{:table}; kw...)
-    Xcol = Tables.columns(X)
-    col_names = propertynames(Xcol)
-    types = map(col_names) do name
-        scitype(getproperty(Xcol, name); kw...)
-    end
-    return Table{Union{types...}}
-end
-
-# Implementation of schema for  :table  trait
-
-function ST.schema(X, ::Val{:table}; kw...)
-    sch    = Tables.schema(X)
-    Xcol   = Tables.columntable(X)
-    names  = sch.names
-    types  = Tuple{sch.types...}
-    stypes = Tuple{(elscitype(getproperty(Xcol, n); kw...) for n in names)...}
-    return Schema(names, types, stypes, _nrows(X))
-end
-
-function _nrows(X)
-    Tables.columnaccess(X) || return length(collect(X))
-    # if has columnaccess
-    cols = Tables.columntable(X)
-    !isempty(cols) || return 0
-    return length(cols[1])
-end
-
-ScientificTypes.info(X, ::Val{:table}) = schema(X)

@@ -42,7 +42,7 @@ function coerce end
 
 function coerce(X, types_dict::AbstractDict; kw...)
     isempty(types_dict) && return X
-    ST.trait(X) == :table || error("Non-tabular data encountered.")
+    ScientificTypes.trait(X) == :table || error("Non-tabular data encountered.")
     names  = schema(X).names
     X_ct   = Tables.columntable(X)
     ct_new = (_coerce_col(X_ct, col, types_dict; kw...) for col in names)
@@ -70,12 +70,17 @@ function coerce(X, types_pairs::Pair{<:Type,<:Type}...; kw...)
     coerce(X, types_dict; kw...)
 end
 
+# -------------------------------------------------------------
+# utilities for coerce
+
 function _coerce_col(X, name, types_dict::AbstractDict; kw...)
     y = getproperty(X, name)
     haskey(types_dict, name) && return coerce(y, types_dict[name]; kw...)
     return y
 end
 
+# -------------------------------------------------------------
+# In place coercion for dataframe
 
 """
 coerce!(X, ...)
@@ -89,7 +94,8 @@ function coerce!(X, args...; kw...)
     # DataFrame --> coerce_dataframe! (see convention)
     is_type(X, :DataFrames, :DataFrame) && return coerce_df!(X, args...; kw...)
     # Everything else
-    throw(ArgumentError("In place coercion not supported for $(typeof(X)). Try `coerce` instead."))
+    throw(ArgumentError("In place coercion not supported for $(typeof(X))." *
+                        "Try `coerce` instead."))
 end
 
 coerce!(X, types::Dict; kw...) = coerce!(X, (p for p in types)..., kw...)
@@ -111,4 +117,27 @@ function coerce_df!(df, pairs::Pair{Symbol}...; kw...)
         eval(ex)
     end
     return df
+end
+
+# -------------------------------------------------------------
+# utilities for coerce!
+
+"""
+    is_type(X, spkg, stype)
+
+Check that an object `X` is of a given type that may be defined in a package
+that is not loaded in the current environment.
+As an example say `DataFrames` is not loaded in the current environment, a
+function from some package could still return a DataFrame in which case it
+can be checked with
+
+```
+is_type(X, :DataFrames, :DataFrame)
+```
+"""
+function is_type(X, spkg::Symbol, stype::Symbol)
+    # If the package is loaded, then it will just be `stype`
+    # otherwise it will be `spkg.stype`
+    rx = Regex("^($spkg\\.)?$stype")
+    return ifelse(match(rx, "$(typeof(X))") === nothing, false, true)
 end

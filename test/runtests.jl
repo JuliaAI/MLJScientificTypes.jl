@@ -1,7 +1,6 @@
 using Test, ScientificTypes, MLJScientificTypes, Random
 using Tables, CategoricalArrays, CSV, DataFrames, ColorTypes
 
-const MST  = MLJScientificTypes
 const Arr  = AbstractArray
 const CArr = CategoricalArray
 const Cat  = Union{CategoricalValue,CategoricalString}

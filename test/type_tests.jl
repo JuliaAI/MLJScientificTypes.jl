@@ -18,9 +18,9 @@
     @test t <: Table(Infinite, Multiclass)
     @test !(t <: Table(Continuous, Union{Missing, Count}))
 
-    @test MST._nrows(X) == 5
-    @test MST._nrows(()) == 0
-    @test MST._nrows((i for i in 1:7)) == 7
+    @test MLJScientificTypes._nrows(X) == 5
+    @test MLJScientificTypes._nrows(()) == 0
+    @test MLJScientificTypes._nrows((i for i in 1:7)) == 7
 end
 
 @testset "csvfile" begin

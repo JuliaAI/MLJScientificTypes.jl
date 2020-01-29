@@ -12,7 +12,7 @@ an array based on rules
                               autotype, `only_changes` should be true.
 * `rules=(:few_to_finite,)`: the set of rules to apply.
 """
-autotype(X; kw...) = _autotype(X, Val(ST.trait(X)); kw...)
+autotype(X; kw...) = _autotype(X, Val(ScientificTypes.trait(X)); kw...)
 
 # For an array object (trait:other)
 function _autotype(X::Arr, ::Val{:other};
