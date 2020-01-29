@@ -10,7 +10,7 @@ PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 ScientificTypes = "321657f4-b219-11e9-178b-2701a2544e81"
 Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
-[Compat]
+[compat]
 CategoricalArrays = "^0.7"
 ColorTypes = "^0.9"
 PrettyTables = "^0.6"
