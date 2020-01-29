@@ -3,6 +3,13 @@
     a = ["aa", "bb", "aa", "bb"] |> categorical
     @test scitype(a[1]) == Multiclass{2}
 
+    s = scitype(a[1])
+    @test MLJScientificTypes._compact_scitype(s) == Symbol("Multiclass{2}")
+    a = [missing,1,2,3]
+    s = elscitype(a)
+    @test MLJScientificTypes._compact_scitype(s) == Symbol("Union{Missing, Count}")
+    s = "Union{Missing,ScientificTypes.Continuous}"
+
     # schema show
     df = DataFrame(x=[1.0,2.0,3.0],y=["a","b","c"])
     s = schema(df)

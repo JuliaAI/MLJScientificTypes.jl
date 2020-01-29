@@ -28,7 +28,7 @@ function Base.show(io::IO, ::MIME"text/plain", s::ST.Schema)
     data = Tables.matrix((
                 names=collect(s.names),
                 types=collect(s.types),
-                scitypes=collect(s.scitypes)
+                scitypes=collect(s.scitypes) .|> _compact_scitype
                 ))
     header = ["_.names", "_.types", "_.scitypes"]
     println(io, "_.table = ")
@@ -36,4 +36,16 @@ function Base.show(io::IO, ::MIME"text/plain", s::ST.Schema)
                  header_crayon=Crayon(bold=false),
                  alignment=:l)
     println(io, "_.nrows = $(s.nrows)")
+end
+
+# These functions help avoid showing scientific types as
+# `ScientificTypes.Continuous`
+function _compact_scitype(st::Type{T}) where T <: ST.Found
+    t = match(r"(?:ScientificTypes\.)?(.*)", string(T)).captures[1]
+    return Symbol(t)
+end
+
+function _compact_scitype(st::Type{Union{Missing, T}}) where T <: ST.Found
+    U = _compact_scitype(nonmissing(T))
+    return Symbol("Union{Missing, $U}")
 end
