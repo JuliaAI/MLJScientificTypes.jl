@@ -8,7 +8,6 @@ ST.scitype(img::Arr{<:Gray,2}, ::MLJ) = GrayImage{size(img)...}
 ST.scitype(img::Arr{<:AbstractRGB,2}, ::MLJ) =
 ColorImage{size(img)...}
 
-
 # CategoricalArray scitype
 
 function ST.scitype(c::Cat, ::MLJ)

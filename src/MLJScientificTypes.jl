@@ -5,14 +5,13 @@ using ScientificTypes
 using Tables, CategoricalArrays, ColorTypes, PrettyTables
 
 # Exports
-export Table
-export categorical, coerce, coerce!, autotype
+export categorical, coerce, coerce!, autotype, schema, info
 
 # Re-exports from ScientificTypes
 export Scientific, Found, Unknown, Known, Finite, Infinite,
        OrderedFactor, Multiclass, Count, Continuous, Textual,
-       Binary, ColorImage, GrayImage
-export scitype, scitype_union, elscitype, schema, info, nonmissing
+       Binary, ColorImage, GrayImage, Table
+export scitype, scitype_union, elscitype, nonmissing
 
 # -------------------------------------------------------------
 # Abbreviations
@@ -31,10 +30,9 @@ include("init.jl")
 # Includes
 
 include("coerce.jl")
+include("schema.jl")
 include("autotype.jl")
 
-include("convention/table.jl")
-include("convention/schema.jl")
 include("convention/scitype.jl")
 include("convention/coerce.jl")
 
