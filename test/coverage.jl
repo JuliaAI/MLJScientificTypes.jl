@@ -29,6 +29,27 @@
     c = coerce(x, OrderedFactor, tight=true)
     @test c == categorical([1,2])
     @test !(eltype(c) >: Missing)
+
+    X = (1, 2, 3)
+    @test info(X) === nothing
+
+    # increase autotype coverage
+    M = MLJScientificTypes
+    @test M.string_to_multiclass(String, ["a","b"], 0) == String
+    @test M.string_to_multiclass(Textual, ["a","b"], 0) == Multiclass
+    @test M.string_to_multiclass(Textual, ["a","b", missing], 0) == Union{Missing,Multiclass}
+
+    # explicit scitype test
+    S = ScientificTypes
+    @test S.Scitype(Int, M.MLJ()) == Count
+    @test S.Scitype(Float64, M.MLJ()) == Continuous
+    @test S.Scitype(SubString, M.MLJ()) == Textual
+
+    X = [1,2,3]
+    @test elscitype(X) == Count
+    S.Scitype(::Type{Float16}, ::MLJScientificTypes.MLJ) = Count
+    Xf = Float16[1,2,3]
+    @test elscitype(Xf) == Count
 end
 
 @testset "Schema" begin
