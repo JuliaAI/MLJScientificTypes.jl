@@ -29,6 +29,20 @@
     c = coerce(x, OrderedFactor, tight=true)
     @test c == categorical([1,2])
     @test !(eltype(c) >: Missing)
+end
 
-    @test_throws ErrorException Table(Int, Float64)
+@testset "Schema" begin
+    M = MLJScientificTypes
+    sch = M.Schema((:a, :b), (Int, Int), (Count, Count), 5)
+    @test sch isa M.Schema{(:a, :b),Tuple{Int64,Int64},Tuple{Count,Count},5}
+    @test sch.names == (:a, :b)
+    @test sch.types == (Int, Int)
+    @test sch.scitypes == (Count, Count)
+    @test sch.nrows == 5
+
+    @test_throws ArgumentError sch.something
+    @test propertynames(sch) == (:names, :types, :scitypes, :nrows)
+
+    X = [1,2,3]
+    @test_throws ArgumentError schema(X)
 end
