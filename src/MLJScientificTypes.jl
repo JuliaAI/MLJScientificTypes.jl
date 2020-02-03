@@ -7,11 +7,11 @@ using Tables, CategoricalArrays, ColorTypes, PrettyTables
 # Exports
 export categorical, coerce, coerce!, autotype, schema, info
 
-# Re-exports from ScientificTypes
+# re-exports from ScientificTypes
 export Scientific, Found, Unknown, Known, Finite, Infinite,
        OrderedFactor, Multiclass, Count, Continuous, Textual,
-       Binary, ColorImage, GrayImage, Table
-export scitype, scitype_union, elscitype, nonmissing
+       Binary, ColorImage, GrayImage, Image, Table
+export scitype, scitype_union, elscitype, nonmissing, trait
 
 # -------------------------------------------------------------
 # Abbreviations
