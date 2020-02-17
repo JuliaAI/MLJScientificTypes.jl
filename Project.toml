@@ -1,7 +1,7 @@
 name = "MLJScientificTypes"
 uuid = "2e2323e0-db8b-457b-ae0d-bdfb3bc63afd"
 authors = ["Anthony D. Blaom <anthony.blaom@gmail.com>"]
-version = "0.1.1"
+version = "0.2.0"
 
 [deps]
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
@@ -15,7 +15,7 @@ CategoricalArrays = "^0.7"
 ColorTypes = "^0.9"
 PrettyTables = "^0.8"
 ScientificTypes = "^0.7"
-Tables = "^0.2"
+Tables = "^1.0"
 julia = "1"
 
 [extras]

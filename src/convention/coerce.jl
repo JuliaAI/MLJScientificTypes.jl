@@ -58,14 +58,34 @@ function coerce(y::Arr{T}, T2::Type{<:Union{Missing,Continuous}};
 end
 
 # CArr -> Count/Continuous via `_int` or `float(_int)`
-function coerce(y::CArr, T2::Type{<:Union{Missing,C}};
+function coerce(y::CArr{T}, T2::Type{<:Union{Missing,C}};
                 verbosity::Int=1, tight::Bool=false
-                ) where C <: Union{Count,Continuous}
+                ) where T where C <: Infinite
     # here we broadcast and so we don't need to tighten
     iy = _int.(y)
     _check_eltype(iy, T2, verbosity)
     C == Count && return iy
     return float(iy)
+end
+
+const MaybeNumber = Union{Missing,AbstractChar,AbstractString}
+
+# Textual => Count / Continuous via parse
+function coerce(y::Arr{T}, T2::Type{<:Union{Missing,C}};
+                verbosity::Int=1, tight::Bool=false
+                ) where T <: MaybeNumber where C <: Infinite
+    # NOTE: we're forced to do this in here (as opposed to despatching over
+    # CArr) to avoid confusion between CArr and Arr when we want to convert
+    # from 'Textual' to 'Infinite'. This is irrelevant though as the bottleneck
+    # is the call to `_int.` and `_float.`.
+    if !(nonmissing(elscitype(y)) <: Textual)
+        throw(CoercionError("Scitype '$(nonmissing(elscitype(y)))' is not " *
+                            "supported for coercion to Continuous."))
+    end
+    y = _check_tight(y, T, tight)
+    _check_eltype(y, T2, verbosity)
+    C == Count && return _int.(y)
+    return _float.(y)
 end
 
 ## ARRAY OF ANY
@@ -132,7 +152,11 @@ end
 _int(::Missing)  = missing
 _int(x::Integer) = x
 _int(x::Cat)     = CategoricalArrays.order(x.pool)[x.level]
-_int(x)          = Int(x) # NOTE: may throw InexactError
+_int(x)          = Int(x)                # NOTE: may throw InexactError
+
+_int(x::AbstractString)   = Int(Meta.parse(x))    # NOTE: may fail
+_float(x::AbstractString) = float(Meta.parse(x))
+_float(x::Missing) = missing
 
 function _check_eltype(y, T, verb)
     E = eltype(y)

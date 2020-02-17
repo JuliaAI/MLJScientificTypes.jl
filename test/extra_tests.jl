@@ -1,15 +1,15 @@
 if VERSION ≥ v"1.3.0-"
-@testset "Coerce Col2" begin
-   X = Tables.table(ones(1_000, 2))
-   tmp = tempname()
-   CSV.write(tmp, X)
-   data = CSV.read(tmp, threaded=true)
-   # data.Column1 and data.Column2 are Column2 (as of CSV 5.19)
-   @test startswith("$(typeof(data.Column1))", "CSV.Column2")
-   dc = coerce(data, autotype(data, :discrete_to_continuous))
-   @test scitype(dc) == Table{AbstractArray{Continuous,1}}
-   rm(tmp)
-end
+   @testset "Coerce Col2" begin
+      X = Tables.table(ones(1_000, 2))
+      tmp = tempname()
+      CSV.write(tmp, X)
+      data = CSV.read(tmp, threaded=true)
+      # data.Column1 and data.Column2 are Column2 (as of CSV 5.19)
+      @test startswith("$(typeof(data.Column1))", "CSV.Column2")
+      dc = coerce(data, autotype(data, :discrete_to_continuous))
+      @test scitype(dc) == Table{AbstractArray{Continuous,1}}
+      rm(tmp)
+   end
 end
 
 @testset "coerce!" begin
@@ -28,5 +28,5 @@ end
    coerce!(df, autotype(df, :few_to_finite))
    @test scitype(df) == Table{Union{AbstractArray{Multiclass{3},1}, AbstractArray{OrderedFactor{1},1}}}
 
-   @test_throws ArgumentError coerce!(randn(5, 5))
+   @test_throws MLJScientificTypes.CoercionError coerce!(randn(5, 5))
 end
