@@ -73,7 +73,4 @@ end
     @test_throws MLJScientificTypes.CoercionError coerce!(x, Continuous)
     x = (1,2,3,4)
     @test_throws MLJScientificTypes.CoercionError coerce(x, Continuous)
-
-    x = (x = [1,2,3], y=[1,2,3])
-    @test_throws ArgumentError coerce!(x, :x=>Continuous)
 end
