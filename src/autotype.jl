@@ -49,7 +49,7 @@ function _autotype(X, ::Val{:table}; only_changes::Bool=true,
     has_changed = Symbol[]
     # go over each column and for each of them apply the rules in order
     # in which they were provided
-    zipper = zip(sch.names, sch.types, sch.scitypes, Tables.eachcolumn(X))
+    zipper = zip(sch.names, sch.types, sch.scitypes, Tables.Columns(X))
     for (name, type, stype, col) in zipper
         # start with the data type and iterate over the rules to get
         # a suggested type, note that this loop is type unstable but it
