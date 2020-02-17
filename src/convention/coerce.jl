@@ -68,6 +68,26 @@ function coerce(y::CArr, T2::Type{<:Union{Missing,C}};
     return float(iy)
 end
 
+const MaybeNumber = Union{AbstractChar,AbstractString}
+
+# Textual => Count
+function coerce(y::Arr{T}, T2::Type{<:Union{Missing,Count}};
+                verbosity::Int=1, tight::Bool=false
+                ) where T <: Union{Missing,MaybeNumber}
+    y = _check_tight(y, T, tight)
+    _check_eltype(y, T2, verbosity)
+    return _int.(y)
+end
+
+# Textual => Continuous
+function coerce(y::Arr{T}, T2::Type{<:Union{Missing,Continuous}};
+                verbosity::Int=1, tight::Bool=false
+                ) where T <: Union{Missing,MaybeNumber}
+    y = _check_tight(y, T, tight)
+    _check_eltype(y, T2, verbosity)
+    return _float.(y)
+end
+
 ## ARRAY OF ANY
 # Note: in the categorical case, we don't care, because we broadcast anyway.
 # see CArr --> C above.
@@ -132,7 +152,13 @@ end
 _int(::Missing)  = missing
 _int(x::Integer) = x
 _int(x::Cat)     = CategoricalArrays.order(x.pool)[x.level]
-_int(x)          = Int(x) # NOTE: may throw InexactError
+_int(x::Char)    = Int(Meta.parse("$x")) # NOTE: may fail
+_int(x::String)  = Int(Meta.parse(x))    # NOTE: may fail
+_int(x)          = Int(x)                # NOTE: may throw InexactError
+
+_float(x::Char)    = float(Meta.parse("$x"))
+_float(x::String)  = float(Meta.parse(x))
+_float(x::Missing) = missing
 
 function _check_eltype(y, T, verb)
     E = eltype(y)
