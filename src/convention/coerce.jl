@@ -74,14 +74,6 @@ const MaybeNumber = Union{Missing,AbstractChar,AbstractString}
 function coerce(y::Arr{T}, T2::Type{<:Union{Missing,C}};
                 verbosity::Int=1, tight::Bool=false
                 ) where T <: MaybeNumber where C <: Infinite
-    # NOTE: we're forced to do this in here (as opposed to despatching over
-    # CArr) to avoid confusion between CArr and Arr when we want to convert
-    # from 'Textual' to 'Infinite'. This is irrelevant though as the bottleneck
-    # is the call to `_int.` and `_float.`.
-    if !(nonmissing(elscitype(y)) <: Textual)
-        throw(CoercionError("Scitype '$(nonmissing(elscitype(y)))' is not " *
-                            "supported for coercion to Continuous."))
-    end
     y = _check_tight(y, T, tight)
     _check_eltype(y, T2, verbosity)
     C == Count && return _int.(y)
