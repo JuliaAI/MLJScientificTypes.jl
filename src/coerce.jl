@@ -38,8 +38,9 @@ Xc = coerce(X, Count=>Continuous)
 schema(Xfixed).scitypes # (Continuous, Continuous, Continuous)
 ```
 """
-coerce(X, a...; kw...) = coerce(Val(ST.trait(X)),  X, a...; kw...)
+coerce(X, a...; kw...) = coerce(Val(ST.trait(X)), X, a...; kw...)
 
+# Non tabular data is not supported
 coerce(::Val{:other}, X, a...; kw...) =
     throw(CoercionError("`coerce` is undefined for non-tabular data."))
 
@@ -49,27 +50,6 @@ function coerce(::Val{:table}, X, types_dict::AbstractDict; kw...)
     X_ct   = Tables.columntable(X)
     ct_new = (_coerce_col(X_ct, col, types_dict; kw...) for col in names)
     return Tables.materializer(X)(NamedTuple{names}(ct_new))
-end
-
-# allow passing pairs like :feature1=>Continuous
-coerce(::Val{:table}, X, type_pairs::Pair{Symbol,<:Type}...; kw...) =
-    coerce(X, Dict(type_pairs); kw...)
-
-# allow passing rules like Count=>Continuous
-function coerce(::Val{:table}, X, types_pairs::Pair{<:Type,<:Type}...; kw...)
-    from_types = [tp.first  for tp in types_pairs]
-    to_types   = [tp.second for tp in types_pairs]
-    types_dict = Dict{Symbol,Type}()
-    # retrieve the names that match the from_types
-    sch = schema(X)
-    for (name, st) in zip(sch.names, sch.scitypes)
-        j   = findfirst(ft -> Union{Missing,ft} >: st, from_types)
-        j === nothing && continue
-        # if here then `name` is concerned by the change
-        tt = to_types[j]
-        types_dict[name] = ifelse(st >: Missing, Union{Missing,tt}, tt)
-    end
-    coerce(X, types_dict; kw...)
 end
 
 # -------------------------------------------------------------
@@ -86,7 +66,36 @@ function _coerce_col(X, name, types_dict::AbstractDict; kw...)
 end
 
 # -------------------------------------------------------------
-# In place coercion for dataframe
+# alternative ways to do coercion, both for coerce and coerce!
+
+for c in (:coerce, :coerce!)
+    ex = quote
+        # Allow passing a number of symbol-type pairs SA1=>TB1, SA2=>TB2, ...
+        function $c(::Val{:table}, X, type_pairs::Pair{Symbol,<:Type}...; kw...)
+            return $c(X, Dict(type_pairs); kw...)
+        end
+        # Allow passing a number of type pairs TA1=>TB1, TA2=>TB2, ...
+        function $c(::Val{:table}, X, type_pairs::Pair{<:Type,<:Type}...; kw...)
+            from_types = [tp.first  for tp in type_pairs]
+            to_types   = [tp.second for tp in type_pairs]
+            types_dict = Dict{Symbol,Type}()
+            # retrieve the names that match the from_types
+            sch = schema(X)
+            for (name, st) in zip(sch.names, sch.scitypes)
+                j   = findfirst(ft -> Union{Missing,ft} >: st, from_types)
+                j === nothing && continue
+                # if here then `name` is concerned by the change
+                tt = to_types[j]
+                types_dict[name] = ifelse(st >: Missing, Union{Missing,tt}, tt)
+            end
+            $c(X, types_dict; kw...)
+        end
+    end
+    eval(ex)
+end
+
+# -------------------------------------------------------------
+# In place coercion
 
 """
 coerce!(X, ...)
@@ -96,37 +105,46 @@ place provided `X` supports in-place modification (at the moment, only the
 DataFrame! does). An error is thrown otherwise. The arguments are the same as
 `coerce`.
 """
-function coerce!(X, args...; kw...)
-    # DataFrame --> coerce_dataframe! (see convention)
-    is_type(X, :DataFrames, :DataFrame) && return coerce_df!(X, args...; kw...)
+coerce!(X, a...;  kw...) = coerce!(Val(ST.trait(X)), X, a...; kw...)
+
+coerce!(::Val{:other}, X, a...; kw...) =
+    throw(CoercionError("`coerce!` is undefined for non-tabular data."))
+
+function coerce!(::Val{:table}, X, types_dict::AbstractDict; kw...)
+    # DataFrame --> coerce_df!
+    if is_type(X, :DataFrames, :DataFrame)
+        return coerce_df!(X, types_dict; kw...)
+    end
     # Everything else
     throw(ArgumentError("In place coercion not supported for $(typeof(X))." *
                         "Try `coerce` instead."))
 end
 
-coerce!(X, types::Dict; kw...) = coerce!(X, (p for p in types)..., kw...)
+# -------------------------------------------------------------
+# utilities for coerce!
 
-function coerce_df!(df, pairs::Pair{Symbol}...; kw...)
+"""
+    coerce_df!(df, pairs...; kw...)
+
+In place coercion for a dataframe.
+"""
+function coerce_df!(df, tdict::AbstractDict; kw...)
     names = schema(df).names
-    types = Dict(pairs)
     for name in names
-        name in keys(types) || continue
+        name in keys(tdict) || continue
         # for DataFrames >= 0.19 df[!, name] = coerce(df[!, name], types(name))
         # but we want something that works more robustly... even for older
         # DataFrames; the only way to do this is to use the
         # `df.name = something` but we cannot use setindex! without throwing
-        # a deprecation warning... metaprogramming to the rescue!
+        # a deprecation warning... metaprogramming to the rescue.
         name_str = "$name"
         ex = quote
-            $df.$name = coerce($df.$name, $types[Symbol($name_str)], $kw...)
+            $df.$name = coerce($df.$name, $tdict[Symbol($name_str)], $kw...)
         end
         eval(ex)
     end
     return df
 end
-
-# -------------------------------------------------------------
-# utilities for coerce!
 
 """
     is_type(X, spkg, stype)
