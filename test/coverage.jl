@@ -67,3 +67,10 @@ end
     X = [1,2,3]
     @test_throws ArgumentError schema(X)
 end
+
+@testset "Err" begin
+    x = [1,2,3,4]
+    @test_throws MLJScientificTypes.CoercionError coerce!(x, Continuous)
+    x = (1,2,3,4)
+    @test_throws MLJScientificTypes.CoercionError coerce(x, Continuous)
+end

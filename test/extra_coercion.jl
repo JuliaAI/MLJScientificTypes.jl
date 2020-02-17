@@ -24,3 +24,14 @@ end
     coerce!(df, Textual=>Count)
     @test scitype(df) == Table{AbstractArray{Count,1}}
 end
+
+# coverage
+
+struct Foo
+    a::Int
+end
+
+@testset "Err2" begin
+    x = Foo.([1,2,3,4])
+    @test_throws MLJScientificTypes.CoercionError coerce(x, Continuous)
+end
