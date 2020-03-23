@@ -1,7 +1,7 @@
 name = "MLJScientificTypes"
 uuid = "2e2323e0-db8b-457b-ae0d-bdfb3bc63afd"
 authors = ["Anthony D. Blaom <anthony.blaom@gmail.com>"]
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
