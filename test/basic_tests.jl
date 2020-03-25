@@ -177,6 +177,7 @@ end
     @test scitype(yc) == Vec{Union{Missing,OrderedFactor{3}}}
     @test scitype_union(yc) == Union{Missing,OrderedFactor{3}}
     @test scitype_union(y) == Union{Missing,Multiclass{3}}
+
 end
 
 @testset "coerce arrays" begin
@@ -247,10 +248,11 @@ end
     @test all(coerce(y, Count) .== [9, 6, 8, 1, 10, 5, 4, 7, 3, 2])
 
     y = categorical([1:10..., missing, 11], ordered=true)
-    @test all(skipmissing(coerce(y, Union{Continuous, Missing}) .== float([1:10...,missing,11])))
+    @test all(skipmissing(coerce(y, Union{Continuous, Missing}) .==
+                          float([1:10...,missing,11])))
 end
 
-# issue #62
+# issue #62 (ScientficTypes)
 @testset "Type=>Type" begin
     X = (x=[1,2,1,2,5,1,0,7],
          y=[0,1,0,1,0,1,0,1],
@@ -262,10 +264,28 @@ end
     Xc = coerce(Xc, OrderedFactor=>Count)
     @test elscitype(Xc.y) == Count
     Xc = coerce(Xc, :z=>Multiclass, verbosity=0)
-    Xc = coerce(Xc, Multiclass=>OrderedFactor)
+    Xc = coerce(Xc, Multiclass=>OrderedFactor, verbosity=0)
     @test elscitype(Xc.z) == Union{Missing,OrderedFactor{2}}
-    Xc = coerce(X, Count=>Continuous, Unknown=>Multiclass)
+    Xc = coerce(X, Count=>Continuous, Unknown=>Multiclass, verbosity=0)
     @test elscitype(Xc.x) == Continuous
     @test elscitype(Xc.y) == Continuous
     @test elscitype(Xc.z) == Union{Missing,Multiclass{2}}
+end
+
+# issue #13
+
+@testset "mixture of Type=>Type and Symbol=>Type" begin
+    X = (x=10:10:44, y=1:4, z=collect("abcd"), w=["a", "b", "c", missing])
+    @test MLJScientificTypes.feature_scitype_pairs(:x => Continuous, X) ==
+        [:x => Continuous, ]
+    @test MLJScientificTypes.feature_scitype_pairs(Count => Continuous, X) ==
+        [:x => Union{Continuous}, :y=> Union{Continuous}]
+    X1 = coerce(X, :z => Multiclass, Count=>Continuous)
+    @test schema(X1).scitypes ==
+        (Continuous, Continuous, Multiclass{4}, Union{Missing,Textual})
+    X2 = coerce(X, :z => Multiclass, :w=>Multiclass, Count=>Continuous,
+                verbosity=0)
+    @test schema(X2).scitypes ==
+        (Continuous, Continuous, Multiclass{4}, Union{Missing,Multiclass{3}})
+    @test_throws ArgumentError coerce(X, Count => Continuous, :x=>Multiclass)
 end

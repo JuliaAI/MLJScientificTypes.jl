@@ -56,7 +56,7 @@ schema(X; kw...) = schema(X, Val(trait(X)); kw...)
 # Fallback
 schema(X, ::Val{:other}; kw...) =
     throw(ArgumentError("Cannot inspect the internal scitypes of "*
-                        "an object with trait `:other`."))
+                        "a non-tabular object. "))
 
 function schema(X, ::Val{:table}; kw...)
     sch    = Tables.schema(X)
