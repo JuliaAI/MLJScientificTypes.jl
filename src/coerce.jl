@@ -68,27 +68,48 @@ end
 # -------------------------------------------------------------
 # alternative ways to do coercion, both for coerce and coerce!
 
+# The following extends the two methods so that a mixture of
+# symbol=>type and type=>type pairs can be specified in place of a
+# dictionary:
+
+feature_scitype_pairs(p::Pair{Symbol,<:Type}, X) = [p, ]
+function feature_scitype_pairs(p::Pair{<:Type,<:Type}, X)
+    from_scitype = first(p)
+    to_scitype = last(p)
+    sch = schema(X)
+    ret = Pair{Symbol,Type}[]
+    for j in eachindex(sch.names)
+        if sch.scitypes[j] <: Union{Missing,from_scitype}
+            push!(ret, Pair(sch.names[j], to_scitype))
+        end
+    end
+    return ret
+end
+
 for c in (:coerce, :coerce!)
     ex = quote
-        # Allow passing a number of symbol-type pairs SA1=>TB1, SA2=>TB2, ...
-        function $c(::Val{:table}, X, type_pairs::Pair{Symbol,<:Type}...; kw...)
-            return $c(X, Dict(type_pairs); kw...)
-        end
-        # Allow passing a number of type pairs TA1=>TB1, TA2=>TB2, ...
-        function $c(::Val{:table}, X, type_pairs::Pair{<:Type,<:Type}...; kw...)
-            from_types = [tp.first  for tp in type_pairs]
-            to_types   = [tp.second for tp in type_pairs]
-            types_dict = Dict{Symbol,Type}()
-            # retrieve the names that match the from_types
-            sch = schema(X)
-            for (name, st) in zip(sch.names, sch.scitypes)
-                j   = findfirst(ft -> Union{Missing,ft} >: st, from_types)
-                j === nothing && continue
-                # if here then `name` is concerned by the change
-                tt = to_types[j]
-                types_dict[name] = ifelse(st >: Missing, Union{Missing,tt}, tt)
+        function $c(::Val{:table},
+                    X,
+                    mixed_pairs::Pair{<:Union{Symbol,<:Type},<:Type}...;
+                    kw...)
+            components = map(p -> feature_scitype_pairs(p, X), mixed_pairs)
+            pairs = vcat(components...)
+
+            # must construct dictionary by hand to check no conflicts:
+            scitype_given_feature = Dict{Symbol,Type}()
+            for p in pairs
+                feature = first(p)
+                if haskey(scitype_given_feature, feature)
+                    throw(ArgumentError("`coerce` argments cannot be "*
+                                        "resolved to determined a "*
+                                        "*unique* scitype for each "*
+                                        "feature. "))
+                else
+                    scitype_given_feature[feature] = last(p)
+                end
             end
-            $c(X, types_dict; kw...)
+
+            return $c(X, scitype_given_feature; kw...)
         end
     end
     eval(ex)
