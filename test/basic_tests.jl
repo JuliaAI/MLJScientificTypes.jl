@@ -85,6 +85,23 @@ end
     @test scitype(gray_image) == GrayImage{10,20}
 end
 
+@testset "temporal types" begin
+    d = Date(2020, 4, 21)
+    t = Time(8, 15, 42)
+    dt = now()
+    @test scitype(d) == ScientificDate
+    @test scitype(t) == ScientificTime
+    @test scitype(dt) == ScientificDateTime
+    @test scitype(vcat([missing, ], fill(d, 3))) ==
+        AbstractVector{Union{Missing,ScientificDate}}
+    @test scitype(vcat([missing, ], fill(t, 3))) ==
+        AbstractVector{Union{Missing,ScientificTime}}
+    @test scitype(vcat([missing, ], fill(dt, 3))) ==
+        AbstractVector{Union{Missing,ScientificDateTime}}
+    @test scitype([missing, d, t]) ==
+        AbstractVector{Union{Missing,ScientificTimeType}}
+end
+
 @testset "Type coercion" begin
     X = (x=10:10:44, y=1:4, z=collect("abcd"))
     types = Dict(:x => Continuous, :z => Multiclass)

@@ -1,48 +1,76 @@
 # MLJScientificTypes.jl
 
-Implementation of the MLJ convention for
-[Scientific Types](https://github.com/alan-turing-institute/ScientificTypes.jl).
-Scientific Types allow the distinction between **machine type** and
+Implementation of a convention for [scientific
+types](https://github.com/alan-turing-institute/ScientificTypes.jl),
+as used in the [MLJ
+universe](https://github.com/alan-turing-institute/MLJ.jl).
+
+This package makes a distinction between **machine type** and
 **scientific type**:
 
-* the _machine type_ is a Julia type the data is currently encoded as (for
-instance: `Float64`)
-* the _scientific type_ is a type defined by this package which
-  encapsulates how the data should be _interpreted_ (for instance:
-  `Continuous` or `Multiclass`)
+* The _machine type_ refers to the Julia type begin used to represent
+  the data (for instance, `Float64`).
 
-Determining what scientific type should be given to what data is determined
-by a convention such as the one this package implements which is the one
-in use in the [MLJ](https://github.com/alan-turing-institute/MLJ.jl) universe.
+* The _scientific type_ is one of the types defined in
+  [ScientificTypes.jl](https://github.com/alan-turing-institute/ScientificTypes.jl)
+  reflecting how the data should be _interpreted_ (for instance,
+  `Continuous` or `Multiclass`).
+
+A *scientific type convention* is an assignment of a scientific type
+to every Julia object, articulated by overloading the `scitype`
+method.  The MLJ convention is the one adopted in the platform the
+[MLJ](https://github.com/alan-turing-institute/MLJ.jl) ecosystem.
+
+This package additionally defined tools for type coercion (the
+`coerce` method) and scientific type "guessing" (the `autotype`
+method).
+
+Developers interested in implementing a different convention will
+instead import [Scientific
+Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl),
+following the documentation there, possibly using this repo as a
+template.
 
 ## Type hierarchy
 
 The supported scientific types have the following hierarchy:
 
 ```
-Found
-├─ Known
-│  ├─ Finite
-│  │  ├─ Multiclass
-│  │  └─ OrderedFactor
-│  ├─ Infinite
-│  │  ├─ Continuous
-│  │  └─ Count
-│  ├─ Image
-│  │  ├─ ColorImage
-│  │  └─ GrayImage
-|  ├─ Textual
-│  └─ Table
-└─ Unknown
+Finite{N}
+├─ Multiclass{N}
+└─ OrderedFactor{N}
+
+Infinite
+├─ Continuous
+└─ Count
+
+Image{W,H}
+├─ ColorImage{W,H}
+└─ GrayImage{W,H}
+
+ScientificTimeType
+├─ ScientificDate
+├─ ScientificTime
+└─ ScientificDateTime
+
+Table{K}
+
+Textual
+
+Unknown
 ```
 
 ## Getting started
 
-The package is registered and can be installed via the package manager with
-`add MLJScientificTypes`.
+This documentation focuses on properties of the `scitype` method
+specific to the MLJ convention. The `scitype` method satisfies certain
+universal properties, with respect to its operation on tuples, arrays
+and tables, set out in the ScientificTypes
+[readme](https://github.com/alan-turing-institute/ScientificTypes.jl),
+but only implicitly described here.
 
-To get the scientific type of a Julia object according to the MLJ convention,
-call `scitype`:
+To get the scientific type of a Julia object defined by the MLJ
+convention, call `scitype`:
 
 ```@example 1
 using MLJScientificTypes # hide
@@ -60,91 +88,91 @@ scitype([1,2,3,missing])
 elscitype([1,2,3,missing])
 ```
 
-For an iterable, you can use `scitype_union` which gives you the tightest union
-of scitypes corresponding to the elements:
+Occasionally, you may want to find the union of all scitypes of
+elements of an arbitrary iterable, which you can do with
+`scitype_union`:
 
 ```@example 1
 scitype_union((ifelse(isodd(i), i, missing) for i in 1:5))
 ```
 
-note that `scitype_union` has to go over all elements which is slow whereas
-`scitype` and `elscitype` can often be immediately returned upon inspection of  
-the machine type.
+Note calling `scitype_union` on a large array, for example, is
+typically much slower than calling `scitype` or `elscitype`.
 
 ## Type coercion for tabular data
 
-The standard workflow involves the following two steps:
+A common two-step work-flow is:
 
-1. inspect the `schema` of the data and the `scitypes` in particular
-1. provide pairs or a dictionary with column names and scitypes for any changes
-you may want and coerce the data to those scitypes
+1. Inspect the `schema` of some table, and the column `scitypes` in particular.
+
+1. Provide pairs or a dictionary with column names and scitypes that
+changes the column machine types to reflect the desired scientific
+interpretation (scitype).
 
 ```@example 2
 using MLJScientificTypes # hide
 using DataFrames, Tables
 X = DataFrame(
-     name=["Siri", "Robo", "Alexa", "Cortana"],
-     height=[152, missing, 148, 163],
-     rating=[1, 5, 2, 1])
+	 name=["Siri", "Robo", "Alexa", "Cortana"],
+	 height=[152, missing, 148, 163],
+	 rating=[1, 5, 2, 1])
 schema(X)
 ```
 
-inspecting the scitypes:
-
-```@example 2
-schema(X).scitypes
-```
-
-but in this case you may want to map the names to `Multiclass`, the height to
-`Continuous` and the ratings to `OrderedFactor`; to do so use the `coerce`
-function:
+In some further analysis, a more likely interpretation is that `:name` is
+`Multiclass`, the `:height` is `Continuous`, and the `:rating` an
+`OrderedFactor`. Correcting the types with `coerce`:
 
 ```@example 2
 Xfixed = coerce(X, :name=>Multiclass,
-                   :height=>Continuous,
-                   :rating=>OrderedFactor)
+				   :height=>Continuous,
+				   :rating=>OrderedFactor)
 schema(Xfixed).scitypes
 ```
 
-Note that, as it encountered missing values in `height` it coerced the type to
-`Union{Missing,Continuous}` and a warning is issued (to avoid such warnings,
-coerce to `Union{Missing,T}` where appropriate)
+Note that, as missing values were encountered in `height` an
+"imperfect" type coercion to `Union{Missing,Continuous}` has been
+performed, but a warning issued.  To avoid the warning, coerce to
+`Union{Missing,Continuous}` instead.
 
-One can also make a replacement based on existing scientific type, instead of
-feature name:
+"Global" replacements based on existing scientific types are also
+possible, and can be mixed with the name-based replacements:
 
 ```@example 2
 X  = (x = [1, 2, 3],
-      y = rand(3),
-      z = [10, 20, 30])
-Xfixed = coerce(X, Count=>Continuous)
+	  y = [:A, :B, :A],
+	  z = [10, 20, 30])
+Xfixed = coerce(X, Count=>Continuous, :y=>OrderedFactor)
 schema(Xfixed).scitypes
 ```
 
 Finally there is a `coerce!` method that does in-place coercion provided the
-data structure allows it (at the moment only `DataFrames.DataFrame` is
-supported).
+data structure supports it.
 
 ## Notes
 
-- We regard the built-in Julia type `Missing` as a scientific type. The new scientific types introduced in the current package are rooted in the abstract type `Found` (see tree above).
-- `Finite{N}`, `Multiclass{N}` and `OrderedFactor{N}` are all parametrised by the number of levels `N`. We export the alias `Binary = Finite{2}`.
-- `Image{W,H}`, `GrayImage{W,H}` and `ColorImage{W,H}` are all parametrised by the image width and height dimensions, `(W, H)`.
-- The function `scitype` has the fallback value `Unknown`.
+- We regard the built-in Julia type `Missing` as a scientific type. 
+- `Finite{N}`, `Multiclass{N}` and `OrderedFactor{N}` are all parameterized by the number of levels `N`. We export the alias `Binary = Finite{2}`.
+- `Image{W,H}`, `GrayImage{W,H}` and `ColorImage{W,H}` are all parameterized by the image width and height dimensions, `(W, H)`.
+- On objects for which the MLJ convention has nothing to say, the
+  `scitype` function returns `Unknown`.
 
 ### Special note on binary data
 
 MLJScientificTypes does not define a separate "binary" scientific
-type. Rather, when binary data has an intrinsic "true" class (for example
-pass/fail in a product test), then it should be assigned an
-`OrderedFactor{2}` scitype, while data with no such class (e.g., gender)
-should be assigned a `Multiclass{2}` scitype. In the former case
-we recommend that the "true" class come after "false" in the ordering
-(corresponding to the usual assignment "false=0" and "true=1"). Of
-course, `Finite{2}` covers both cases of binary data.
+type. Rather, when binary data has an intrinsic "true" class (for
+example pass/fail in a product test), then it should be assigned an
+`OrderedFactor{2}` scitype, while data with no such class (e.g.,
+gender) should be assigned a `Multiclass{2}` scitype. In the
+`OrderedFactor{2}` case MLJ adopts the convention that "true" class
+come *after* the "false" class in the ordering (corresponding to the
+usual assignment "false=0" and "true=1"). Of course, `Finite{2}`
+covers both cases of binary data.
 
 
 ## Detailed usage examples
+
+### Basics
 
 ```@example 3
 using MLJScientificTypes # hide
@@ -159,34 +187,47 @@ v = categorical(['a', 'c', 'a', missing, 'b'], ordered=true)
 scitype(v[1])
 ```
 
-and
-
 ```@example 3
 elscitype(v)
 ```
 
-you could coerce this to `Multiclass`:
+Coercing to `Multiclass`:
 
 ```@example 3
 w = coerce(v, Union{Missing,Multiclass})
 elscitype(w)
 ```
 
-## Working with tables
+### Working with tables
+
+While `schema` is convenient for inspecting the column scitypes of a
+table, there is also a scitype for the tables themselves:
 
 ```@example 4
 using MLJScientificTypes # hide
 data = (x1=rand(10), x2=rand(10))
-scitype(data)
-```
-
-you can also use `schema`:
-
-```@example 4
 schema(data)
 ```
 
-and use `<:` for type checks:
+```@example 4
+scitype(data)
+```
+
+Similarly, any table implementing the Tables interface has scitype
+`Table{K}`, where `K` is the union of the scitypes of its columns.
+
+Table scitypes are useful for dispatch and type checks, as shown here,
+with the help of a constructor for `Table` scitypes provided by [Scientific
+Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl).
+
+
+```julia
+Table(Continuous, Count)
+```
+
+```julia
+Table{<:Union{AbstractArray{<:Continuous},AbstractArray{<:Count}}}
+```
 
 ```@example 4
 scitype(data) <: Table(Continuous)
@@ -196,96 +237,49 @@ scitype(data) <: Table(Continuous)
 scitype(data) <: Table(Infinite)
 ```
 
-or specify multiple types directly:
-
 ```@example 4
 data = (x=rand(10), y=collect(1:10), z = [1,2,3,1,2,3,1,2,3,1])
 data = coerce(data, :z=>OrderedFactor)
 scitype(data) <: Table(Continuous,Count,OrderedFactor)
 ```
 
-## Tuples, arrays and tables
+Note that `Table(Continuous,Finite)` is a *type* union and not a
+`Table` *instance*.
 
-**Important Definition 1** Under any convention, the scitype of a tuple is a
-`Tuple` type parametrised by scientific types:
+### Tuples and arrays
+
+The behavior of `scitype` on tuples is as you would expect:
 
 ```@example 5
 using MLJScientificTypes #hide
 scitype((1, 4.5))
 ```
 
-**Important Definition 2** The scitype of an `AbstractArray`, `A`, is
+For performance reasons, the behavior of `scitype` on arrays has some
+wrinkles, in the case of missing values:
+
+**The scitype of an array.** The scitype of an `AbstractArray`, `A`, is
 always`AbstractArray{U}` where `U` is the union of the scitypes of the
 elements of `A`, with one exception: If `typeof(A) <:
 AbstractArray{Union{Missing,T}}` for some `T` different from `Any`,
 then the scitype of `A` is `AbstractArray{Union{Missing, U}}`, where
 `U` is the union over all non-missing elements, **even if `A` has no
-missing elements**.
-
-This exception is made for performance reasons. If one wants to override it,
-one uses `scitype(A, tight=true)`.
-
-```@example 5
-v = [1.3, 4.5, missing]
-scitype(v)
-```
-
-```@example 5
-scitype(v[1:2])
-```
-
-```@example 5
-scitype(v[1:2], tight=true)
-```
-
-*Performance note:* Computing type unions over large arrays is
-expensive and, depending on the convention's implementation and the
-array eltype, computing the scitype can be slow.
-In the *MLJ* convention this is mitigated with the help of the
-`ScientificTypes.Scitype` method, of which other conventions could make use.
-Do `?ScientificTypes.Scitype` for details.
-An eltype `Any` may lead to poor performances and you may want to consider
-replacing an array `A` with `broadcast(identity, A)` to collapse the eltype and
-speed up the computation.
-
-Any table implementing the Tables interface has a scitype encoding the scitypes
-of its columns:
-
-```@example 5
-using CategoricalArrays
-X = (x1=rand(10),
-     x2=rand(10),
-     x3=categorical(rand("abc", 10)),
-     x4=categorical(rand("01", 10)))
-schema(X)
-```
-
-**Important Definition 3** Specifically, if `X` has columns `c1, ...,
-cn`, then
+missing elements.**
 
 ```julia
-scitype(X) == Table{Union{scitype(c1), ..., scitype(cn)}}
+julia> v = [1.3, 4.5, missing]
+julia> scitype(v)
+AbstractArray{Union{Missing, Continuous},1}
 ```
 
-With this definition, common type checks can be performed with tables.
-For instance, you could check that each column of `X` has an element scitype that is either
-`Continuous` or `Finite`:
-
-```@example 5
-scitype(X) <: Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Finite}}}
+```julia
+julia> scitype(v[1:2])
+AbstractArray{Union{Missing, Continuous},1}
 ```
-
-A built-in `Table` constructor provides a shorthand for the right-hand side:
-
-```@example 5
-scitype(X) <: Table(Continuous, Finite)
-```
-
-Note that `Table(Continuous,Finite)` is a *type* union and not a `Table` *instance*.
 
 ## The MLJ convention
 
-The table below summarises the *MLJ* convention for representing
+The table below summarizes the *MLJ* convention for representing
 scientific types:
 
 Type `T`        | `scitype(x)` for `x::T`           | package required
@@ -298,6 +292,9 @@ Type `T`        | `scitype(x)` for `x::T`           | package required
 `CategoricalString` | `Multiclass{N}` where `N = nlevels(x)`, provided `x.pool.ordered == false`  | CategoricalArrays
 `CategoricalValue` | `OrderedFactor{N}` where `N = nlevels(x)`, provided `x.pool.ordered == true`| CategoricalArrays
 `CategoricalString` | `OrderedFactor{N}` where `N = nlevels(x)` provided `x.pool.ordered == true` | CategoricalArrays
+`Date`          | `ScientificDate`     | Dates
+`Time`          | `ScientificTime`     | Dates
+`DateTime`      | `ScientificDateTime` | Dates
 `AbstractArray{<:Gray,2}` | `GrayImage{W,H}` where `(W, H) = size(x)`                                   | ColorTypes
 `AbstractArrray{<:AbstractRGB,2}` | `ColorImage{W,H}` where `(W, H) = size(x)`                                  | ColorTypes
 any table type `T` supported by Tables.jl | `Table{K}` where `K=Union{column_scitypes...}`                      | Tables
@@ -362,10 +359,10 @@ By default it only applies the `:few_to_many` rule
 using MLJScientificTypes # hide
 n = 50
 X = (a = rand("abc", n),         # 3 values, not number        --> Multiclass
-     b = rand([1,2,3,4], n),     # 4 values, number            --> OrderedFactor
-     c = rand([true,false], n),  # 2 values, number but only 2 --> Multiclass
-     d = randn(n),               # many values                 --> unchanged
-     e = rand(collect(1:n), n))  # many values                 --> unchanged
+	 b = rand([1,2,3,4], n),     # 4 values, number            --> OrderedFactor
+	 c = rand([true,false], n),  # 2 values, number but only 2 --> Multiclass
+	 d = randn(n),               # many values                 --> unchanged
+	 e = rand(collect(1:n), n))  # many values                 --> unchanged
 autotype(X, only_changes=true)
 ```
 
@@ -380,3 +377,13 @@ autotype(X, only_changes=true, rules=(:discrete_to_continuous, :few_to_finite))
 
 One should check and possibly modify the returned dictionary
 before passing to `coerce`.
+
+## API reference
+
+```@docs
+ScientificTypes.scitype
+ScientificTypes.elscitype
+ScientificTypes.scitype_union
+coerce
+autotype
+```
