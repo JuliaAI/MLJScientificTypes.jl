@@ -85,6 +85,14 @@ end
     @test scitype(gray_image) == GrayImage{10,20}
 end
 
+@testset "temporal types" begin
+    d = Date(2020, 4, 21)
+    t = Time(8, 15, 42)
+    scitype(d) == ScientificDate
+    scitype(t) == ScientificTime
+    scitype(DateTime(d, t)) == ScientificDateTime
+end
+
 @testset "Type coercion" begin
     X = (x=10:10:44, y=1:4, z=collect("abcd"))
     types = Dict(:x => Continuous, :z => Multiclass)

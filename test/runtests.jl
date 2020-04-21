@@ -1,5 +1,6 @@
 using Test, ScientificTypes, MLJScientificTypes, Random
 using Tables, CategoricalArrays, CSV, DataFrames, ColorTypes
+using Dates
 
 const Arr  = AbstractArray
 const CArr = CategoricalArray

@@ -2,12 +2,14 @@ module MLJScientificTypes
 
 # Dependencies
 using ScientificTypes
-using Tables, CategoricalArrays, ColorTypes, PrettyTables
+using Tables, CategoricalArrays, ColorTypes, PrettyTables, Dates
 
 # re-exports from ScientificTypes
 export Scientific, Found, Unknown, Known, Finite, Infinite,
-       OrderedFactor, Multiclass, Count, Continuous, Textual,
-       Binary, ColorImage, GrayImage, Image, Table
+    OrderedFactor, Multiclass, Count, Continuous, Textual,
+    Binary, ColorImage, GrayImage, Image, Table,
+    ScientificTimeType, ScientificDate, ScientificDateTime,
+    ScientificTime
 export scitype, scitype_union, elscitype, nonmissing, trait
 
 # exports

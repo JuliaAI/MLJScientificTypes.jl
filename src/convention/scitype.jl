@@ -3,6 +3,10 @@
 ST.scitype(::Integer,        ::MLJ) = Count
 ST.scitype(::AbstractFloat,  ::MLJ) = Continuous
 ST.scitype(::AbstractString, ::MLJ) = Textual
+ST.scitype(::TimeType,       ::MLJ) = ScientificTimeType
+ST.scitype(::Time    ,       ::MLJ) = ScientificTime
+ST.scitype(::Date,           ::MLJ) = ScientificDate
+ST.scitype(::DateTime,       ::MLJ) = ScientificDateTime
 
 ST.scitype(img::Arr{<:Gray,2}, ::MLJ) = GrayImage{size(img)...}
 ST.scitype(img::Arr{<:AbstractRGB,2}, ::MLJ) =
