@@ -88,7 +88,7 @@ end
 @testset "temporal types" begin
     d = Date(2020, 4, 21)
     t = Time(8, 15, 42)
-    dt = DateTime(d, t)
+    dt = now()
     @test scitype(d) == ScientificDate
     @test scitype(t) == ScientificTime
     @test scitype(dt) == ScientificDateTime
