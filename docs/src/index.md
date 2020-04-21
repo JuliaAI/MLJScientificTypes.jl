@@ -1,7 +1,9 @@
 # MLJScientificTypes.jl
 
-Implementation of the MLJ convention for
-[Scientific Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl).
+Implementation of a convention for [scientific
+types](https://github.com/alan-turing-institute/ScientificTypes.jl),
+as used in the [MLJ
+universe](https://github.com/alan-turing-institute/MLJ.jl).
 
 This package makes a distinction between **machine type** and
 **scientific type**:

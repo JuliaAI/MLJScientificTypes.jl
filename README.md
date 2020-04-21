@@ -4,18 +4,83 @@
 | :-----------: | :------: | :-----------: |
 | [![Build Status](https://travis-ci.org/alan-turing-institute/MLJScientificTypes.jl.svg?branch=master)](https://travis-ci.org/alan-turing-institute/MLJScientificTypes.jl) | [![codecov.io](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl/coverage.svg?branch=master)](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl?branch=master) | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://alan-turing-institute.github.io/MLJScientificTypes.jl/dev)
 
-Implementation of the MLJ convention for [Scientific Types](https://github.com/alan-turing-institute/ScientificTypes.jl).
-Scientific Types allow the distinction between **machine type** and
+Implementation of a convention for [scientific
+types](https://github.com/alan-turing-institute/ScientificTypes.jl),
+as used in the [MLJ
+universe](https://github.com/alan-turing-institute/MLJ.jl).
+
+**Important note.** While this document refers to the *MLJ convention*,
+this convention could (and, hopefully, will) be adopted in
+statistical/scientific software outside of the MLJ project. Of its
+dependencies, only the tiny package
+[ScientificTypes.jl](https://github.com/alan-turing-institute/ScientificTypes.jl)
+has any direct connection to MLJ.
+
+This package makes a distinction between **machine type** and
 **scientific type**:
 
-* the _machine type_ is a Julia type the data is currently encoded as (for instance: `Float64`)
-* the _scientific type_ is a type defined by this package which
-  encapsulates how the data should be _interpreted_ (for instance:
-  `Continuous` or `Multiclass`)
+* The _machine type_ refers to the Julia type begin used to represent
+  the data (for instance, `Float64`).
 
-Determining what scientific type should be given to what data is determined
-by a convention such as the one this package implements which is the one
-in use in the [MLJ](https://github.com/alan-turing-institute/MLJ.jl) universe.
+* The _scientific type_ is one of the types defined in
+  [ScientificTypes.jl](https://github.com/alan-turing-institute/ScientificTypes.jl)
+  reflecting how the data should be _interpreted_ (for instance,
+  `Continuous` or `Multiclass`).
+
+
+#### Contents
+
+ - [Installation](#installation)
+ - [Who is this repository for?](#who-is-this-repository-for)
+ - [What's provided here?](#what-is-provided-here)
+ - [Very quick start](#very-quick-start)
+
+## Installation
+
+```julia
+using Pkg
+Pkg.add(MLJScientificTypes)
+```
+
+## Who is this repository for?
+
+This repository has two kinds of users in mind:
+ 
+- users of software in the [MLJ
+  universe](https://github.com/alan-turing-institute/MLJ.jl) seeking a
+  deeper understanding of the use of scientific types and associated
+  tools; *these users do not need to directly install this package*
+  but may find its documentation helpful
+
+- developers of statistical and scientific software who want to
+  articulate their data type requirements in a generic,
+  purpose-oriented way, and who are furthermore happy to adopt an
+  existing convention about what data types should be used for
+  what purpose (a convention that has been successfully adopted in an
+  existing large scale Julia project)
+
+Developers interested in implementing a different convention will
+instead import [Scientific
+Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl),
+following the documentation there, possibly using this repo as a
+template.
+
+## What's provided here?
+
+The module `MLJScientificTypes` defined in this repo rexports the
+scientific types and associated methods defined in [Scientific
+Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl)
+and provides:
+
+- a collection of `ScientificTypes.scitype` definitions that
+  articulate the MLJ convention, importing the module automatically
+  activating the convention
+
+- a `coerce` function, for changing machine types to reflect a specified
+  scientific interpretation (scientific type)
+
+- an `autotype` fuction for "guessing" the intended scientific type of data 
+
 
 ## Very quick start
 
@@ -57,7 +122,7 @@ julia> sch.names
 (:a, :b, :c, :d, :e)
 ```
 
-Now you could want to specify that `b` is actually a `Count`, and that `d` and `e` are `Multiclass`; this is done with the `coerce` function:
+To specify that instead `b` should be regared as `Count`, and that both `d` and `e` are `Multiclass`, we use the `coerce` function:
 
 ```julia
 Xc = coerce(X, :b=>Count, :d=>Multiclass, :e=>Multiclass)
@@ -74,17 +139,10 @@ _.table =
 │ a       │ Float64                                      │ Continuous                    │
 │ b       │ Union{Missing, Int64}                        │ Union{Missing, Count}         │
 │ c       │ Int64                                        │ Count                         │
-│ d       │ CategoricalValue{Int64,UInt32}                │ Multiclass{2}                 │
-│ e       │ Union{Missing, CategoricalValue{Char,UInt32}} │ Union{Missing, Multiclass{2}} │
+│ d       │ CategoricalValue{Int64,UInt32}               │ Multiclass{2}                 │
+│ e       │ Union{Missing, CategoricalValue{Char,UInt32}}│ Union{Missing, Multiclass{2}} │
 └─────────┴──────────────────────────────────────────────┴───────────────────────────────┘
 _.nrows = 5
 
 ```
 
-Note that a warning is shown as you ask to convert a `Union{Missing,T}` to a
-`S` which ultimately results in a `Union{Missing,S}`. See the docs for more
-details. Compare with the following call which leads to the same result but
-shows no warning:
-
-```
-Xc = coerce(X, :b=>Union{Missing,Count}, :d=>Multiclass, :e=>Union{Missing,Multiclass})
