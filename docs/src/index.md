@@ -18,10 +18,11 @@ This package makes a distinction between **machine type** and
 
 A *scientific type convention* is an assignment of a scientific type
 to every Julia object, articulated by overloading the `scitype`
-method.  The MLJ convention is the one adopted in the platform the
-[MLJ](https://github.com/alan-turing-institute/MLJ.jl) ecosystem.
+method.  The MLJ convention is the one adopted in the
+[MLJ](https://github.com/alan-turing-institute/MLJ.jl) ecosystem,
+although it may be used in other scientific/statistical software.
 
-This package additionally defined tools for type coercion (the
+This package additionally defines tools for type coercion (the
 `coerce` method) and scientific type "guessing" (the `autotype`
 method).
 
@@ -99,15 +100,39 @@ scitype_union((ifelse(isodd(i), i, missing) for i in 1:5))
 Note calling `scitype_union` on a large array, for example, is
 typically much slower than calling `scitype` or `elscitype`.
 
+## Summary of the MLJ convention
+
+The table below summarizes the MLJ convention for representing
+scientific types:
+
+Type `T`        | `scitype(x)` for `x::T`           | package required
+:-------------- | :-------------------------------- | :------------------------
+`Missing`       | `Missing`                         |
+`AbstractFloat` | `Continuous`                      |
+`Integer`       |  `Count`                          |
+`String`        | `Textual`                         |
+`CategoricalValue` | `Multiclass{N}` where `N = nlevels(x)`, provided `x.pool.ordered == false`  | CategoricalArrays
+`CategoricalString` | `Multiclass{N}` where `N = nlevels(x)`, provided `x.pool.ordered == false`  | CategoricalArrays
+`CategoricalValue` | `OrderedFactor{N}` where `N = nlevels(x)`, provided `x.pool.ordered == true`| CategoricalArrays
+`CategoricalString` | `OrderedFactor{N}` where `N = nlevels(x)` provided `x.pool.ordered == true` | CategoricalArrays
+`Date`          | `ScientificDate`     | Dates
+`Time`          | `ScientificTime`     | Dates
+`DateTime`      | `ScientificDateTime` | Dates
+`AbstractArray{<:Gray,2}` | `GrayImage{W,H}` where `(W, H) = size(x)`                                   | ColorTypes
+`AbstractArrray{<:AbstractRGB,2}` | `ColorImage{W,H}` where `(W, H) = size(x)`                                  | ColorTypes
+any table type `T` supported by Tables.jl | `Table{K}` where `K=Union{column_scitypes...}`                      | Tables
+
+Here `nlevels(x) = length(levels(x.pool))`.
+
 ## Type coercion for tabular data
 
 A common two-step work-flow is:
 
 1. Inspect the `schema` of some table, and the column `scitypes` in particular.
 
-1. Provide pairs or a dictionary with column names and scitypes that
-changes the column machine types to reflect the desired scientific
-interpretation (scitype).
+1. Provide pairs of column names and scitypes (or a dictionary) that
+   change the column machine types to reflect the desired scientific
+   interpretation (scitype).
 
 ```@example 2
 using MLJScientificTypes # hide
@@ -119,20 +144,21 @@ X = DataFrame(
 schema(X)
 ```
 
-In some further analysis, a more likely interpretation is that `:name` is
-`Multiclass`, the `:height` is `Continuous`, and the `:rating` an
-`OrderedFactor`. Correcting the types with `coerce`:
+In some further analysis of the data in `X`, a more likely
+interpretation is that `:name` is `Multiclass`, the `:height` is
+`Continuous`, and the `:rating` an `OrderedFactor`. Correcting the
+types with `coerce`:
 
 ```@example 2
 Xfixed = coerce(X, :name=>Multiclass,
-				   :height=>Continuous,
-				   :rating=>OrderedFactor)
+                   :height=>Continuous,
+                   :rating=>OrderedFactor)
 schema(Xfixed).scitypes
 ```
 
-Note that, as missing values were encountered in `height` an
+Note that because missing values were encountered in `height`, an
 "imperfect" type coercion to `Union{Missing,Continuous}` has been
-performed, but a warning issued.  To avoid the warning, coerce to
+performed, and a warning issued.  To avoid the warning, coerce to
 `Union{Missing,Continuous}` instead.
 
 "Global" replacements based on existing scientific types are also
@@ -164,7 +190,7 @@ type. Rather, when binary data has an intrinsic "true" class (for
 example pass/fail in a product test), then it should be assigned an
 `OrderedFactor{2}` scitype, while data with no such class (e.g.,
 gender) should be assigned a `Multiclass{2}` scitype. In the
-`OrderedFactor{2}` case MLJ adopts the convention that "true" class
+`OrderedFactor{2}` case MLJ adopts the convention that the "true" class
 come *after* the "false" class in the ordering (corresponding to the
 usual assignment "false=0" and "true=1"). Of course, `Finite{2}`
 covers both cases of binary data.
@@ -180,7 +206,8 @@ using CategoricalArrays
 scitype((2.718, 42))
 ```
 
-Let's try with categorical valued objects:
+In the MLJ convention, to construct arrays with categorical scientific
+element type one needs to use `CategorialArrays`:
 
 ```@example 3
 v = categorical(['a', 'c', 'a', missing, 'b'], ordered=true)
@@ -218,7 +245,7 @@ Similarly, any table implementing the Tables interface has scitype
 
 Table scitypes are useful for dispatch and type checks, as shown here,
 with the help of a constructor for `Table` scitypes provided by [Scientific
-Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl).
+Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl):
 
 
 ```julia
@@ -276,31 +303,6 @@ AbstractArray{Union{Missing, Continuous},1}
 julia> scitype(v[1:2])
 AbstractArray{Union{Missing, Continuous},1}
 ```
-
-## The MLJ convention
-
-The table below summarizes the *MLJ* convention for representing
-scientific types:
-
-Type `T`        | `scitype(x)` for `x::T`           | package required
-:-------------- | :-------------------------------- | :------------------------
-`Missing`       | `Missing`                         |
-`AbstractFloat` | `Continuous`                      |
-`Integer`       |  `Count`                          |
-`String`        | `Textual`                         |
-`CategoricalValue` | `Multiclass{N}` where `N = nlevels(x)`, provided `x.pool.ordered == false`  | CategoricalArrays
-`CategoricalString` | `Multiclass{N}` where `N = nlevels(x)`, provided `x.pool.ordered == false`  | CategoricalArrays
-`CategoricalValue` | `OrderedFactor{N}` where `N = nlevels(x)`, provided `x.pool.ordered == true`| CategoricalArrays
-`CategoricalString` | `OrderedFactor{N}` where `N = nlevels(x)` provided `x.pool.ordered == true` | CategoricalArrays
-`Date`          | `ScientificDate`     | Dates
-`Time`          | `ScientificTime`     | Dates
-`DateTime`      | `ScientificDateTime` | Dates
-`AbstractArray{<:Gray,2}` | `GrayImage{W,H}` where `(W, H) = size(x)`                                   | ColorTypes
-`AbstractArrray{<:AbstractRGB,2}` | `ColorImage{W,H}` where `(W, H) = size(x)`                                  | ColorTypes
-any table type `T` supported by Tables.jl | `Table{K}` where `K=Union{column_scitypes...}`                      | Tables
-
-Here `nlevels(x) = length(levels(x.pool))`.
-
 
 ## Automatic type conversion
 
