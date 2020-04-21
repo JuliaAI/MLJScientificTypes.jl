@@ -42,3 +42,7 @@ end
 ST.Scitype(::Type{<:Integer},        ::MLJ) = Count
 ST.Scitype(::Type{<:AbstractFloat},  ::MLJ) = Continuous
 ST.Scitype(::Type{<:AbstractString}, ::MLJ) = Textual
+ST.Scitype(::Type{<:TimeType},         ::MLJ) = ScientificTimeType
+ST.Scitype(::Type{<:Date},             ::MLJ) = ScientificDate
+ST.Scitype(::Type{<:Time},             ::MLJ) = ScientificTime
+ST.Scitype(::Type{<:DateTime},         ::MLJ) = ScientificDateTime

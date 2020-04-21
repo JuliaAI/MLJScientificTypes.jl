@@ -88,9 +88,18 @@ end
 @testset "temporal types" begin
     d = Date(2020, 4, 21)
     t = Time(8, 15, 42)
-    scitype(d) == ScientificDate
-    scitype(t) == ScientificTime
-    scitype(DateTime(d, t)) == ScientificDateTime
+    dt = DateTime(d, t)
+    @test scitype(d) == ScientificDate
+    @test scitype(t) == ScientificTime
+    @test scitype(dt) == ScientificDateTime
+    @test scitype(vcat([missing, ], fill(d, 3))) ==
+        AbstractVector{Union{Missing,ScientificDate}}
+    @test scitype(vcat([missing, ], fill(t, 3))) ==
+        AbstractVector{Union{Missing,ScientificTime}}
+    @test scitype(vcat([missing, ], fill(dt, 3))) ==
+        AbstractVector{Union{Missing,ScientificDateTime}}
+    @test scitype([missing, d, t]) ==
+        AbstractVector{Union{Missing,ScientificTimeType}}
 end
 
 @testset "Type coercion" begin
