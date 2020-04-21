@@ -381,8 +381,9 @@ before passing to `coerce`.
 ## API reference
 
 ```@docs
+ScientificTypes.scitype
+ScientificTypes.elscitype
+ScientificTypes.scitype_union
 coerce
-scitype_union
-coerce
-auto_type
+autotype
 ```

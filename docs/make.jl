@@ -1,7 +1,7 @@
-using Documenter, MLJScientificTypes
+using Documenter, MLJScientificTypes, ScientificTypes
 
 makedocs(
-    modules = [MLJScientificTypes],
+    modules = [MLJScientificTypes, ScientificTypes],
     format = Documenter.HTML(
         prettyurls = !("local" in ARGS),
         ),
