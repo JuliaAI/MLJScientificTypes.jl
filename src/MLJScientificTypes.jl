@@ -19,7 +19,7 @@ export coerce, coerce!, autotype, schema, info
 const ST   = ScientificTypes
 const Arr  = AbstractArray
 const CArr = CategoricalArray
-const Cat  = Union{CategoricalValue,CategoricalString}
+const Cat  = CategoricalValue
 
 # Indicate the convention, see init.jl where it is set.
 struct MLJ <: Convention end

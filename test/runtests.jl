@@ -3,7 +3,7 @@ using Tables, CategoricalArrays, CSV, DataFrames, ColorTypes
 
 const Arr  = AbstractArray
 const CArr = CategoricalArray
-const Cat  = Union{CategoricalValue,CategoricalString}
+const Cat  = CategoricalValue
 const Vec  = AbstractVector
 
 include("type_tests.jl")
