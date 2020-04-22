@@ -355,7 +355,7 @@ X_coerced = coerce(X, autotype(X))
 
 ### Examples
 
-By default it only applies the `:few_to_many` rule
+By default it only applies the `:few_to_finite` rule
 
 ```@example auto
 using MLJScientificTypes # hide
