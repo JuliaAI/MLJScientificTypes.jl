@@ -17,14 +17,14 @@ dependencies, only the tiny package
 has any direct connection to MLJ.
 
 This package makes a distinction between **machine type** and
-**scientific type**:
+**scientific type** of a Julia object:
 
-* The _machine type_ refers to the Julia type begin used to represent
-  the data (for instance, `Float64`).
+* The _machine type_ refers to the Julia type being used to represent
+  the object (for instance, `Float64`).
 
 * The _scientific type_ is one of the types defined in
   [ScientificTypes.jl](https://github.com/alan-turing-institute/ScientificTypes.jl)
-  reflecting how the data should be _interpreted_ (for instance,
+  reflecting how the object should be _interpreted_ (for instance,
   `Continuous` or `Multiclass`).
 
 
