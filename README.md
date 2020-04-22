@@ -96,7 +96,7 @@ X = DataFrame(
     d = [0, 1, 0, 1, 0],
     e = ['M', 'F', missing, 'M', 'F'],
     )
-sch = schema(X) # schema is overloaded in ScientificTypes
+sch = schema(X)
 ```
 
 will print
