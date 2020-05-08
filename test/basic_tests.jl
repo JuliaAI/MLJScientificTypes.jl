@@ -144,9 +144,9 @@ end
     @test X_coerced.z === X.z
     z = categorical(X.z)
     @test coerce(z, Multiclass) === z
-    z = categorical(X.z, true, ordered = false)
+    z = categorical(X.z, compress=true, ordered=false)
     @test coerce(z, Multiclass) === z
-    z = categorical(X.z, true, ordered = true)
+    z = categorical(X.z, compress=true, ordered=true)
     @test coerce(z, OrderedFactor) === z
 
     # missing values
