@@ -26,7 +26,7 @@ end
 @testset "csvfile" begin
     X = (x = rand(4), )
     CSV.write("test.csv", X)
-    file = CSV.file("test.csv")
+    file = CSV.File("test.csv")
     @test scitype(file) == scitype(X)
     rm("test.csv")
 end

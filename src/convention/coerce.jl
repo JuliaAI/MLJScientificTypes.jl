@@ -143,7 +143,7 @@ end
 
 _int(::Missing)  = missing
 _int(x::Integer) = x
-_int(x::Cat)     = CategoricalArrays.order(x.pool)[x.level]
+_int(x::Cat)     = levelcode(x)
 _int(x)          = Int(x)                # NOTE: may throw InexactError
 
 _int(x::AbstractString)   = Int(Meta.parse(x))    # NOTE: may fail
