@@ -43,14 +43,17 @@ function _autotype(X, ::Val{:table}; only_changes::Bool=true,
     # recuperate the schema of `X`
     sch = schema(X)
     # dictionary to keep track of the suggested types
-    suggested_types = Dict{Symbol,Type{<:Scientific}}()
+    suggested_types = Dict{Symbol,Type{<:Any}}()
     # keep track of the column names for which the suggested type is different
     # than the convention one
     has_changed = Symbol[]
     # go over each column and for each of them apply the rules in order
     # in which they were provided
-    zipper = zip(sch.names, sch.types, sch.scitypes, Tables.Columns(X))
-    for (name, type, stype, col) in zipper
+    columns = Tables.columns(X)
+    cols = (Tables.getcolumn(columns, c)
+            for c in Tables.columnnames(columns)) |> Tuple
+    zipper = zip(sch.names, sch.types, sch.scitypes, cols)
+    for (name, machine_type, stype, col) in zipper
         # start with the data type and iterate over the rules to get
         # a suggested type, note that this loop is type unstable but it
         # doesn't really matter, there are few rules and sugg is fast

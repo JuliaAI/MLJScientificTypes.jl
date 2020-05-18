@@ -13,7 +13,7 @@ X2 = (
     a = ['M', 'M', 'F', missing, 'F', 'F', 'M', 'F', missing, 'M'],
     b = randn(n),
     c = abs.(Int.(floor.(5*randn(n)))),
-    d = ["aaa", "bbb", "bbb", "ccc", "ddd", "ddd", "ccc", "aaa"],
+    d = ["aaa", "bbb", "bbb", "ccc", "ddd", "ddd", "ccc", "aaa", "ccc", "ddd"],
     e = [1, 2, 3, 4, 4, 3, 2, 2, 1, missing],
     f = [1, 2, 3, 3, 2, 1, 2, 3, 1, 2],
     )
@@ -21,6 +21,9 @@ nobj_a = 2
 nobj_d = 4
 nobj_e = 4
 nobj_f = 3
+
+X1row = Tables.rowtable(X1)
+X2row = Tables.rowtable(X2)
 
 @testset "auto-default" begin
     # this is just with few_to_finite
@@ -42,46 +45,56 @@ nobj_f = 3
     @test sugg_types[:f] == OrderedFactor
 end
 
-@testset "auto-coerce" begin
-    X2c = coerce(X2, autotype(X2))
-    @test schema(X2).scitypes == (Union{Missing, Unknown},  # a
-                                 Continuous,                # b
-                                 Count,                     # c
-                                 Textual,                   # d
-                                 Union{Missing, Count},     # e
-                                 Count)                     # f
-    @test schema(X2c).scitypes == (Union{Missing, Multiclass{nobj_a}},  # a*
-                                 Continuous,                           # b
-                                 Count,                                # c
-                                 Multiclass{nobj_d},                   # d*
-                                 Union{Missing,OrderedFactor{nobj_e}}, # e*
-                                 OrderedFactor{nobj_f})                # f*
+tables = [:X2, :X2row]
+for X in tables
+    s = string(X)
+    @show s
+    eval(quote
+         @testset "auto-coerce $($s)" begin
+             X2c = coerce($X, autotype($X));
+             @test schema($X).scitypes ==
+         (Union{Missing, Unknown},  # a
+          Continuous,                # b
+          Count,                     # c
+          Textual,                   # d
+          Union{Missing, Count},     # e
+          Count)                     # f
+         @test schema(X2c).scitypes ==
+         (Union{Missing, Multiclass{nobj_a}},  # a*
+          Continuous,                           # b
+          Count,                                # c
+          Multiclass{nobj_d},                   # d*
+          Union{Missing,OrderedFactor{nobj_e}}, # e*
+          OrderedFactor{nobj_f});                # f*
+         
+         # test only_changes
+         sugg_types = autotype($X);
+         @test Set(keys(sugg_types)) == Set([:a, :d, :e, :f]);
+         @test sugg_types[:a] == Union{Missing,Multiclass};
+         @test sugg_types[:f] == OrderedFactor;
+         end
 
-    # test only_changes
-    sugg_types = autotype(X2)
-    @test Set(keys(sugg_types)) == Set([:a, :d, :e, :f])
-    @test sugg_types[:a] == Union{Missing,Multiclass}
-    @test sugg_types[:f] == OrderedFactor
-end
+         @testset "auto-d2c $($s)" begin
+         sugg_types = autotype($X; rules=(:discrete_to_continuous,));
+         @test Set(keys(sugg_types)) == Set([:c, :e, :f]);
+         @test sugg_types[:c] == Continuous;
+         
+         # now **after** already using few_to_finite
+         sugg_types =
+         autotype($X; rules=(:few_to_finite, :discrete_to_continuous));
+         @test sugg_types[:a] == Union{Missing,Multiclass};
+         @test sugg_types[:c] == Continuous;
+         @test sugg_types[:d] == Multiclass;
+         @test sugg_types[:e] == Union{Missing,OrderedFactor};
+         @test sugg_types[:f] == OrderedFactor;
+         end
 
-@testset "auto-d2c" begin
-    sugg_types = autotype(X2; rules=(:discrete_to_continuous,))
-    @test Set(keys(sugg_types)) == Set([:c, :e, :f])
-    @test sugg_types[:c] == Continuous
-
-    # now **after** already using few_to_finite
-    sugg_types = autotype(X2; rules=(:few_to_finite, :discrete_to_continuous))
-    @test sugg_types[:a] == Union{Missing,Multiclass}
-    @test sugg_types[:c] == Continuous
-    @test sugg_types[:d] == Multiclass
-    @test sugg_types[:e] == Union{Missing,OrderedFactor}
-    @test sugg_types[:f] == OrderedFactor
-end
-
-@testset "auto-s2c" begin
-    sugg_types = autotype(X2; rules=(:string_to_multiclass,))
-    @test Set(keys(sugg_types)) == Set([:a, :d])
-    @test sugg_types[:a] == Union{Missing,Multiclass}
+         @testset "auto-s2c $($(s))" begin
+         sugg_types = autotype($X; rules=(:string_to_multiclass,));
+         @test Set(keys(sugg_types)) == Set([:a, :d]);
+         @test sugg_types[:a] == Union{Missing,Multiclass};
+         end
+         end)
 end
 
 @testset "auto csvfile" begin
