@@ -168,3 +168,37 @@ function _check_tight(v::CArr, T, tight)
     end
     return v
 end
+
+
+## Images
+F = Real
+_2d{C} =AbstractArray{C} where C<:Union{ColorTypes.AbstractRGB, ColorTypes.Gray}
+
+# Single Image
+function coerce(y::Arr{<:F, 2}, T2::Type{GrayImage})
+    return ColorTypes.Gray.(y)
+end
+
+function coerce(y::Arr{<:F, 3}, T2::Type{ColorImage})
+    return broadcast(ColorTypes.RGB, y[:,:,1], y[:,:,2], y[:,:,3])
+end
+
+# Collection
+
+_3Dcollection = AbstractArray{<:F, 3}       #for b/w images
+_4Dcollection = AbstractArray{<:F, 4}       #for color images
+
+function coerce(y::_3Dcollection, T2::Type{GrayImage})
+    return [ColorTypes.Gray.(y[:,:,idx]) for idx=1:size(y,3)]
+end
+
+function coerce(y::_4Dcollection, T2::Type{GrayImage})
+    size(y, 3) == 1 || error("Multiple color channels encountered. "*
+                      "Perhaps you want to use `coerce(image_collection, ColorImage)`.")
+    y = dropdims(y, dims=3)
+    return [ColorTypes.Gray.(y[:,:,idx]) for idx=1:size(y,3)]
+end
+
+function coerce(y::_4Dcollection, T2::Type{ColorImage})
+    return [broadcast(ColorTypes.RGB, y[:,:,1, idx], y[:,:,2,idx], y[:,:,3, idx]) for idx=1:size(y,4)]
+end

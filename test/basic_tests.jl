@@ -306,3 +306,30 @@ end
         (Continuous, Continuous, Multiclass{4}, Union{Missing,Multiclass{3}})
     @test_throws ArgumentError coerce(X, Count => Continuous, :x=>Multiclass)
 end
+
+@testset "Image" begin
+    #1. Single GrayImage:
+    img = rand(10, 10)
+    @test coerce(img, GrayImage) |> size == size(img)
+    @test scitype(coerce(img, GrayImage)) == GrayImage{10, 10}
+
+    #2. Single colorimage
+    img = rand(10, 10, 3)
+    @test coerce(img, ColorImage) |> size == (10, 10)
+    @test scitype(coerce(img, ColorImage)) == ColorImage{10, 10}
+
+    #3. Collection: 3dcollection -> GrayImage
+    imgs = rand(10, 10, 3)
+    @test coerce(imgs, GrayImage) |> size == (3,)
+    @test scitype(coerce(imgs, GrayImage)) == AbstractArray{GrayImage{10, 10},1}
+    
+    #4. Collection: 4dcollection -> GrayImage
+    imgs = rand(10, 10, 1, 3)
+    @test coerce(imgs, GrayImage) |> size == (3,)
+    @test scitype(coerce(imgs, GrayImage)) == AbstractArray{GrayImage{10, 10},1}
+    
+    #5. Collection : 4dcollection -> ColorImage
+    imgs = rand(10, 10, 3, 5)
+    @test coerce(imgs, ColorImage) |> size == (5,)
+    @test scitype(coerce(imgs, ColorImage)) == AbstractArray{ColorImage{10,10},1}
+end
