@@ -124,6 +124,28 @@ any table type `T` supported by Tables.jl | `Table{K}` where `K=Union{column_sci
 
 Here `nlevels(x) = length(levels(x.pool))`.
 
+## Notes
+
+- We regard the built-in Julia type `Missing` as a scientific type. 
+- `Finite{N}`, `Multiclass{N}` and `OrderedFactor{N}` are all parameterized by the number of levels `N`. We export the alias `Binary = Finite{2}`.
+- `Image{W,H}`, `GrayImage{W,H}` and `ColorImage{W,H}` are all parameterized by the image width and height dimensions, `(W, H)`.
+- On objects for which the MLJ convention has nothing to say, the
+  `scitype` function returns `Unknown`.
+
+
+### Special note on binary data
+
+MLJScientificTypes does not define a separate "binary" scientific
+type. Rather, when binary data has an intrinsic "true" class (for
+example pass/fail in a product test), then it should be assigned an
+`OrderedFactor{2}` scitype, while data with no such class (e.g.,
+gender) should be assigned a `Multiclass{2}` scitype. In the
+`OrderedFactor{2}` case MLJ adopts the convention that the "true" class
+come *after* the "false" class in the ordering (corresponding to the
+usual assignment "false=0" and "true=1"). Of course, `Finite{2}`
+covers both cases of binary data.
+
+
 ## Type coercion for tabular data
 
 A common two-step work-flow is:
@@ -175,25 +197,60 @@ schema(Xfixed).scitypes
 Finally there is a `coerce!` method that does in-place coercion provided the
 data structure supports it.
 
-## Notes
+## Type coercion for image data
 
-- We regard the built-in Julia type `Missing` as a scientific type. 
-- `Finite{N}`, `Multiclass{N}` and `OrderedFactor{N}` are all parameterized by the number of levels `N`. We export the alias `Binary = Finite{2}`.
-- `Image{W,H}`, `GrayImage{W,H}` and `ColorImage{W,H}` are all parameterized by the image width and height dimensions, `(W, H)`.
-- On objects for which the MLJ convention has nothing to say, the
-  `scitype` function returns `Unknown`.
+To have a scientific type of `Image` a julia object must be a
+two-dimensional array whose element type is subtype of `Gray` or
+`AbstractRGB` (color types from the
+[ColorTypes.jl](https://github.com/JuliaGraphics/ColorTypes.jl)
+package). And MLJ models typically expect *collections* of images in
+MLJ to be vectors of such two-dimensional arrays. Implementations of
+`coerce` allow the conversion of some common image formats into one of
+these. The eltype in these other formats can be any subtype of `Real`,
+which includes the `FixedPoint` type from the
+[FixedPointNumbers.jl](https://github.com/JuliaMath/FixedPointNumbers.jl)
+package.
 
-### Special note on binary data
+### Coercing a single image
 
-MLJScientificTypes does not define a separate "binary" scientific
-type. Rather, when binary data has an intrinsic "true" class (for
-example pass/fail in a product test), then it should be assigned an
-`OrderedFactor{2}` scitype, while data with no such class (e.g.,
-gender) should be assigned a `Multiclass{2}` scitype. In the
-`OrderedFactor{2}` case MLJ adopts the convention that the "true" class
-come *after* the "false" class in the ordering (corresponding to the
-usual assignment "false=0" and "true=1"). Of course, `Finite{2}`
-covers both cases of binary data.
+Coercing a **gray** image, represented as a `Real` matrix (W x H format):
+    
+```@example 2
+using MLJScientificTypes # hide
+img = rand(10, 10)
+coerce(img, GrayImage) |> scitype
+```
+Coercing a **color** image, represented as a `Real` 3-D array (W x H x C format):
+
+```@example 2
+img = rand(10, 10, 3)
+coerce(img, ColorImage) |> scitype
+```
+
+### Coercing collections of images
+
+Coercing a **collection** of **gray** images, represented as a `Real` 3-D array
+(W x H x N format):
+
+```@example 2
+imgs = rand(10, 10, 3)
+coerce(imgs, GrayImage) |> scitype
+```
+Coercing a **collection** of **gray** images, represented as a `Real` 4-D array
+(W x H x {1} x N format):
+
+```@example 2
+imgs = rand(10, 10, 1, 3)
+coerce(imgs, GrayImage) |> scitype
+```
+
+Coercing a **collection** of **color** images, represented as a `Real`
+4-D array (W x H x C x N format):
+
+```@example 2
+imgs = rand(10, 10, 3, 5)
+coerce(imgs, ColorImage) |> scitype
+```
 
 
 ## Detailed usage examples
