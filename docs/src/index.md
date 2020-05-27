@@ -74,7 +74,7 @@ To get the scientific type of a Julia object defined by the MLJ
 convention, call `scitype`:
 
 ```@example 1
-using MLJScientificTypes # hide
+using MLJScientificTypes # or using MLJ
 scitype(3.14)
 ```
 
