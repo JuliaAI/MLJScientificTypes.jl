@@ -78,8 +78,8 @@ end
 function Base.show(io::IO, ::MIME"text/plain", s::Schema)
     data = Tables.matrix((
                 names=collect(s.names),
-                types=collect(s.types),
-                scitypes=collect(s.scitypes)
+                scitypes=collect(s.scitypes),
+                types=collect(s.types)
                 ))
     header = ["_.names", "_.types", "_.scitypes"]
     pretty_table(io, data, header;
