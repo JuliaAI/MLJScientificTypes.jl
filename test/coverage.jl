@@ -12,7 +12,7 @@
 
     # coerce
     x = Any['a', 5]
-    @test (@test_logs (:warn, "Char value encountered, such value will be coerced according to the corresponding numeric value (e.g. 'A' to 65).") coerce(x, Count)) == [97, 5]
+    @test (@test_logs (:info, "Char value encountered, such value will be coerced according to the corresponding numeric value (e.g. 'A' to 65).") coerce(x, Count)) == [97, 5]
     x = categorical(['a','b','a','b'])
     @test coerce(x, Continuous) == [1.0,2.0,1.0,2.0]
     y = [missing, 1, 2]
