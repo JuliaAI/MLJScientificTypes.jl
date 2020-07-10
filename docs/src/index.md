@@ -67,14 +67,14 @@ This documentation focuses on properties of the `scitype` method
 specific to the MLJ convention. The `scitype` method satisfies certain
 universal properties, with respect to its operation on tuples, arrays
 and tables, set out in the ScientificTypes
-[readme](https://github.com/alan-turing-institute/ScientificTypes.jl),
+[readme](https://github.com/alan-turing-institute/ScientificTypes.jl#2-the-scitype-and-scitype-methods),
 but only implicitly described here.
 
 To get the scientific type of a Julia object defined by the MLJ
 convention, call `scitype`:
 
 ```@example 1
-using MLJScientificTypes # hide
+using MLJScientificTypes # or using MLJ
 scitype(3.14)
 ```
 

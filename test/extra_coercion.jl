@@ -18,7 +18,7 @@ end
     cx = coerce(x, Union{Missing,Continuous})
     @test all(cx .=== [52.0, 15.0, 125.0, missing])
 
-    @test_logs (:warn, "Trying to coerce from `Union{Missing, String}` to `Count`.\nCoerced to `Union{Missing,Count}` instead.") coerce(x, Count)
+    @test_logs (:info, "Trying to coerce from `Union{Missing, String}` to `Count`.\nCoerced to `Union{Missing,Count}` instead.") coerce(x, Count)
 
     df = DataFrame(x=["1","2","3"], y=[2,3,4])
     coerce!(df, Textual=>Count)

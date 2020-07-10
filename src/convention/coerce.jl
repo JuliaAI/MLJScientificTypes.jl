@@ -99,13 +99,13 @@ function coerce(y::Arr{Any}, T::Type{<:Union{Missing,C}};
     op, num   = ifelse(C == Count, (_int, "65"), (float, "65.0"))
     has_chars = findfirst(e -> isa(e, Char), y) !== nothing
     if has_chars && verbosity > 0
-        @warn "Char value encountered, such value will be coerced according to the corresponding numeric value (e.g. 'A' to $num)."
+        @info "Char value encountered, such value will be coerced according to the corresponding numeric value (e.g. 'A' to $num)."
     end
     # broadcast the operation
     c = op.(y)
     # if the container type has  missing but not target, warn
     if (eltype(c) >: Missing) && !(T >: Missing) && verbosity > 0
-        @warn "Trying to coerce from `Any` to `$T` but encountered missing values.\nCoerced to `Union{Missing,$T}` instead."
+        @info "Trying to coerce from `Any` to `$T` but encountered missing values.\nCoerced to `Union{Missing,$T}` instead."
     end
     return c
 end
@@ -120,10 +120,10 @@ end
 function _coerce_missing_warn(::Type{T}, from::Type) where T
     T >: Missing && return
     if from == Any
-        @warn "Trying to coerce from `Any` to `$T` with categoricals.\n" *
+        @info "Trying to coerce from `Any` to `$T` with categoricals.\n" *
               "Coerced to `Union{Missing,$T}` instead."
     else
-        @warn "Trying to coerce from `$from` to `$T`.\n" *
+        @info "Trying to coerce from `$from` to `$T`.\n" *
               "Coerced to `Union{Missing,$T}` instead."
     end
     return
