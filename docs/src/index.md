@@ -61,6 +61,11 @@ Textual
 Unknown
 ```
 
+
+Additionally, we regard the Julia native types `Missing` and `Nothing`
+as scientific types as well.
+
+
 ## Getting started
 
 This documentation focuses on properties of the `scitype` method
@@ -108,6 +113,7 @@ scientific types:
 Type `T`        | `scitype(x)` for `x::T`           | package required
 :-------------- | :-------------------------------- | :------------------------
 `Missing`       | `Missing`                         |
+`Nothing`       | `Nothing`                         |
 `AbstractFloat` | `Continuous`                      |
 `Integer`       |  `Count`                          |
 `String`        | `Textual`                         |
@@ -126,7 +132,7 @@ Here `nlevels(x) = length(levels(x.pool))`.
 
 ## Notes
 
-- We regard the built-in Julia type `Missing` as a scientific type. 
+- We regard the built-in Julia types `Missing` and `Nothing` as scientific types. 
 - `Finite{N}`, `Multiclass{N}` and `OrderedFactor{N}` are all parameterized by the number of levels `N`. We export the alias `Binary = Finite{2}`.
 - `Image{W,H}`, `GrayImage{W,H}` and `ColorImage{W,H}` are all parameterized by the image width and height dimensions, `(W, H)`.
 - On objects for which the MLJ convention has nothing to say, the
