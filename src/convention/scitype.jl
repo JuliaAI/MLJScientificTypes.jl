@@ -26,6 +26,10 @@ function ST.scitype(A::CArr{T,N}, ::MLJ) where {T,N}
     return AbstractArray{S,N}
 end
 
+# Manifold scitype
+
+ST.scitype(::Tuple{Any,MT}) where MT<:ManifoldsBase.Manifold = ManifoldPoint{MT}
+
 # Table scitype
 
 function ST.scitype(X, ::MLJ, ::Val{:table}; kw...)
@@ -39,10 +43,21 @@ end
 
 # Scitype for fast array broadcasting
 
-ST.Scitype(::Type{<:Integer},        ::MLJ) = Count
-ST.Scitype(::Type{<:AbstractFloat},  ::MLJ) = Continuous
-ST.Scitype(::Type{<:AbstractString}, ::MLJ) = Textual
-ST.Scitype(::Type{<:TimeType},         ::MLJ) = ScientificTimeType
-ST.Scitype(::Type{<:Date},             ::MLJ) = ScientificDate
-ST.Scitype(::Type{<:Time},             ::MLJ) = ScientificTime
-ST.Scitype(::Type{<:DateTime},         ::MLJ) = ScientificDateTime
+const Point{MT} = Tuple{Any,MT}
+const Manifold = ManifoldsBase.Manifold
+
+ST.Scitype(::Type{<:Integer},             ::MLJ) = Count
+ST.Scitype(::Type{<:AbstractFloat},       ::MLJ) = Continuous
+ST.Scitype(::Type{<:AbstractString},      ::MLJ) = Textual
+ST.Scitype(::Type{<:TimeType},            ::MLJ) = ScientificTimeType
+ST.Scitype(::Type{<:Date},                ::MLJ) = ScientificDate
+ST.Scitype(::Type{<:Time},                ::MLJ) = ScientificTime
+ST.Scitype(::Type{<:DateTime},            ::MLJ) = ScientificDateTime
+
+# Next two lines don't work https://github.com/JuliaLang/julia/issues/37703 :
+# ST.Scitype(::Type{<:Point{MT}}, ::MLJ) where MT<:ManifoldsBase.Manifold =
+#     ManifoldPoint{MT}
+
+# TODO: Remove the following hack when above issue is resolved:
+ST.Scitype(T::Type{<:Point{<:Manifold}}, ::MLJ) = ManifoldPoint{last(T.types)}
+

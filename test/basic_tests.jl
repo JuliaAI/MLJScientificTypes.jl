@@ -102,6 +102,23 @@ end
         AbstractVector{Union{Missing,ScientificTimeType}}
 end
 
+struct MySphere{N} <: ManifoldsBase.Manifold{ManifoldsBase.ℝ} where {N}
+    radius::Float64
+end
+MySphere(radius, n) = MySphere{n}(radius)
+
+@testset "manifold point" begin
+    manifold1 = MySphere(1, 3)
+    @test scitype(("some_point_representation", manifold1)) ==
+        ManifoldPoint{MySphere{3}}
+    v1 = [(rand(), manifold1) for _ in 1:4]
+    @test elscitype(v1) == ManifoldPoint{MySphere{3}}
+    @test scitype(v1) == AbstractVector{ManifoldPoint{MySphere{3}}}
+    manifold2 = MySphere(1, 4)
+    v2 = [(rand(), manifold2) for _ in 1:3]
+    @test scitype(vcat(v1, v2)) <: AbstractVector{<:ManifoldPoint{<:MySphere}}
+end
+
 @testset "Type coercion" begin
     X = (x=10:10:44, y=1:4, z=collect("abcd"))
     types = Dict(:x => Continuous, :z => Multiclass)

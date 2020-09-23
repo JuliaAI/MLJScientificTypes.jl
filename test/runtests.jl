@@ -1,5 +1,6 @@
 using Test, ScientificTypes, MLJScientificTypes, Random
 using Tables, CategoricalArrays, CSV, DataFrames, ColorTypes
+import ManifoldsBase
 using Dates
 
 const Arr  = AbstractArray
