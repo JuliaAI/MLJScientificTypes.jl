@@ -12,6 +12,8 @@ ST.scitype(img::Arr{<:Gray,2}, ::MLJ) = GrayImage{size(img)...}
 ST.scitype(img::Arr{<:AbstractRGB,2}, ::MLJ) =
 ColorImage{size(img)...}
 
+ST.scitype(::PersistenceDiagram, ::MLJ) = PersistenceDiagram
+
 # CategoricalArray scitype
 
 function ST.scitype(c::Cat, ::MLJ)
