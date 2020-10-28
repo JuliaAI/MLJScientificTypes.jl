@@ -85,6 +85,14 @@ end
     @test scitype(gray_image) == GrayImage{10,20}
 end
 
+@testset "PersistenceDiagrams" begin
+    diagram = PersistenceDiagram([(1, Inf), (2, 3)], dim=0)
+    @test scitype(diagram) == PersistenceDiagram
+
+    diagrams = [diagram, diagram, diagram]
+    @test scitype(diagrams) == Vec{PersistenceDiagram}
+end
+
 @testset "temporal types" begin
     d = Date(2020, 4, 21)
     t = Time(8, 15, 42)
@@ -322,12 +330,12 @@ end
     imgs = rand(10, 10, 3)
     @test coerce(imgs, GrayImage) |> size == (3,)
     @test scitype(coerce(imgs, GrayImage)) == AbstractArray{GrayImage{10, 10},1}
-    
+
     #4. Collection: 4dcollection -> GrayImage
     imgs = rand(10, 10, 1, 3)
     @test coerce(imgs, GrayImage) |> size == (3,)
     @test scitype(coerce(imgs, GrayImage)) == AbstractArray{GrayImage{10, 10},1}
-    
+
     #5. Collection : 4dcollection -> ColorImage
     imgs = rand(10, 10, 3, 5)
     @test coerce(imgs, ColorImage) |> size == (5,)

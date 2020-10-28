@@ -58,6 +58,8 @@ Table{K}
 
 Textual
 
+PersistenceDiagram
+
 Unknown
 ```
 
@@ -126,13 +128,14 @@ Type `T`        | `scitype(x)` for `x::T`           | package required
 `DateTime`      | `ScientificDateTime` | Dates
 `AbstractArray{<:Gray,2}` | `GrayImage{W,H}` where `(W, H) = size(x)`                                   | ColorTypes
 `AbstractArrray{<:AbstractRGB,2}` | `ColorImage{W,H}` where `(W, H) = size(x)`                                  | ColorTypes
+`PersistenceDiagram` | `PersistenceDiagram` | PersistenceDiagramsBase
 any table type `T` supported by Tables.jl | `Table{K}` where `K=Union{column_scitypes...}`                      | Tables
 
 Here `nlevels(x) = length(levels(x.pool))`.
 
 ## Notes
 
-- We regard the built-in Julia types `Missing` and `Nothing` as scientific types. 
+- We regard the built-in Julia types `Missing` and `Nothing` as scientific types.
 - `Finite{N}`, `Multiclass{N}` and `OrderedFactor{N}` are all parameterized by the number of levels `N`. We export the alias `Binary = Finite{2}`.
 - `Image{W,H}`, `GrayImage{W,H}` and `ColorImage{W,H}` are all parameterized by the image width and height dimensions, `(W, H)`.
 - On objects for which the MLJ convention has nothing to say, the
@@ -220,7 +223,7 @@ package.
 ### Coercing a single image
 
 Coercing a **gray** image, represented as a `Real` matrix (W x H format):
-    
+
 ```@example 2
 using MLJScientificTypes # hide
 img = rand(10, 10)

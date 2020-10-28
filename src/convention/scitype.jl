@@ -12,6 +12,8 @@ ST.scitype(img::Arr{<:Gray,2}, ::MLJ) = GrayImage{size(img)...}
 ST.scitype(img::Arr{<:AbstractRGB,2}, ::MLJ) =
 ColorImage{size(img)...}
 
+ST.scitype(::PersistenceDiagram, ::MLJ) = PersistenceDiagram
+
 # CategoricalArray scitype
 
 function ST.scitype(c::Cat, ::MLJ)
@@ -46,3 +48,4 @@ ST.Scitype(::Type{<:TimeType},         ::MLJ) = ScientificTimeType
 ST.Scitype(::Type{<:Date},             ::MLJ) = ScientificDate
 ST.Scitype(::Type{<:Time},             ::MLJ) = ScientificTime
 ST.Scitype(::Type{<:DateTime},         ::MLJ) = ScientificDateTime
+ST.Scitype(::Type{<:PersistenceDiagram}, ::MLJ) = PersistenceDiagram
