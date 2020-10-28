@@ -48,3 +48,4 @@ ST.Scitype(::Type{<:TimeType},         ::MLJ) = ScientificTimeType
 ST.Scitype(::Type{<:Date},             ::MLJ) = ScientificDate
 ST.Scitype(::Type{<:Time},             ::MLJ) = ScientificTime
 ST.Scitype(::Type{<:DateTime},         ::MLJ) = ScientificDateTime
+ST.Scitype(::Type{<:PersistenceDiagram}, ::MLJ) = PersistenceDiagram
