@@ -2,7 +2,7 @@ module MLJScientificTypes
 
 # Dependencies
 using ScientificTypes
-using Tables, CategoricalArrays, ColorTypes, PrettyTables, Dates
+using Tables, CategoricalArrays, ColorTypes, PersistenceDiagramsBase, PrettyTables, Dates
 
 # re-exports from ScientificTypes
 export Scientific, Found, Unknown, Known, Finite, Infinite,
