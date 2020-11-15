@@ -3,7 +3,7 @@ if VERSION ≥ v"1.3.0-"
       X = Tables.table(ones(1_000, 2))
       tmp = tempname()
       CSV.write(tmp, X)
-      data = CSV.DataFrame!(CSV.File(tmp))
+      data = CSV.read(CSV.File(tmp))
       # data.Column1 and data.Column2 are Column2 (as of CSV 5.19)
       @test data.Column1 isa AbstractArray{<:AbstractFloat}
       dc = coerce(data, autotype(data, :discrete_to_continuous))
