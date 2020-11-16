@@ -1,12 +1,28 @@
 # ------------------------------------------------------------------------
 # FINITE
 
-# Arr{T} -> Finite
+# Supported types for CategoricalArray{T} under CategoricalArrays 0.9:
+const SupportedTypes = Union{Char,AbstractString,Number}
+
+# Arr{T} -> Finite for supported raw label types:
+function coerce(v::Arr{T},
+                ::Type{T2};
+                verbosity::Int=1, tight::Bool=false
+                ) where T <: Union{SupportedTypes, Missing} where T2 <: Union{Missing,Finite}
+    v    = _check_tight(v, T, tight)
+    vcat = categorical(v, ordered=nonmissing(T2)<:OrderedFactor)
+    return _finalize_finite_coerce(vcat, verbosity, T2, T)
+end
+
+# Arr{T} -> Finite for all other types:
 function coerce(v::Arr{T}, ::Type{T2};
                 verbosity::Int=1, tight::Bool=false
                 ) where T where T2 <: Union{Missing,Finite}
-    v    = _check_tight(v, T, tight)
-    vcat = categorical(v, ordered=nonmissing(T2)<:OrderedFactor)
+    verbosity < 0 || @warn "Converting array elements to strings before "*
+        "wrapping in a `CategoricalArray`, as `$T` unsupported. "
+    v_str = string.(v)
+    v_str    = _check_tight(v_str, T, tight)
+    vcat = categorical(v_str, ordered=nonmissing(T2)<:OrderedFactor)
     return _finalize_finite_coerce(vcat, verbosity, T2, T)
 end
 
