@@ -197,8 +197,8 @@ possible, and can be mixed with the name-based replacements:
 
 ```@example 2
 X  = (x = [1, 2, 3],
-	  y = [:A, :B, :A],
-	  z = [10, 20, 30])
+      y = ['A', 'B', 'A'],
+      z = [10, 20, 30])
 Xfixed = coerce(X, Count=>Continuous, :y=>OrderedFactor)
 schema(Xfixed).scitypes
 ```
@@ -427,10 +427,10 @@ By default it only applies the `:few_to_finite` rule
 using MLJScientificTypes # hide
 n = 50
 X = (a = rand("abc", n),         # 3 values, not number        --> Multiclass
-	 b = rand([1,2,3,4], n),     # 4 values, number            --> OrderedFactor
-	 c = rand([true,false], n),  # 2 values, number but only 2 --> Multiclass
-	 d = randn(n),               # many values                 --> unchanged
-	 e = rand(collect(1:n), n))  # many values                 --> unchanged
+     b = rand([1,2,3,4], n),     # 4 values, number            --> OrderedFactor
+     c = rand([true,false], n),  # 2 values, number but only 2 --> Multiclass
+     d = randn(n),               # many values                 --> unchanged
+     e = rand(collect(1:n), n))  # many values                 --> unchanged
 autotype(X, only_changes=true)
 ```
 

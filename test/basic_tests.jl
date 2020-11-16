@@ -1,7 +1,7 @@
 @testset "(In)Finite" begin
-    cv = categorical([:x, :y])
+    cv = categorical(['x', 'y'])
     c  = cv[1]
-    uv = categorical([:x, :y], ordered=true)
+    uv = categorical(['x', 'y'], ordered=true)
     u  = uv[1]
     @test scitype((4, 4.5, c, u, "X")) == Tuple{
                        Count,Continuous,Multiclass{2},OrderedFactor{2},Textual}
@@ -180,19 +180,21 @@ end
     @test scitype_union(y_coerced) === Union{Missing,Count}
     @test scitype_union(@test_logs(
         (:info, r"Trying to coerce from `Union{Missing,"),
-        coerce([:x, :y, missing], Multiclass))) === Union{Missing, Multiclass{2}}
+        coerce(['x', 'y', missing], Multiclass))) ===
+            Union{Missing, Multiclass{2}}
     @test scitype_union(@test_logs(
         (:info, r"Trying to coerce from `Union{Missing,"),
-        coerce([:x, :y, missing], OrderedFactor))) === Union{Missing, OrderedFactor{2}}
+        coerce(['x', 'y', missing], OrderedFactor))) ===
+            Union{Missing, OrderedFactor{2}}
     # non-missing Any vectors
     @test coerce(Any[4, 7],     Continuous) == [4.0, 7.0]
     @test coerce(Any[4.0, 7.0], Continuous) == [4, 7]
 
     # Finite conversions:
-    @test scitype_union(coerce([:x, :y], Finite)) === Multiclass{2}
+    @test scitype_union(coerce(['x', 'y'], Finite)) === Multiclass{2}
     @test scitype_union(@test_logs(
         (:info, r"Trying to coerce from `Union{Missing,"),
-        coerce([:x, :y, missing], Finite))) === Union{Missing, Multiclass{2}}
+        coerce(['x', 'y', missing], Finite))) === Union{Missing, Multiclass{2}}
 
     # More finite conversions (to check resolution of #48):
     y = categorical([1, 2, 3, missing]) # unordered
@@ -226,23 +228,11 @@ end
 end
 
 @testset "Any->MC" begin
-    v1 = categorical(Any[1,2,1,2,1,missing,2])
-    v2 = Any[collect("aksldjfalsdjkfslkjdfalksjdf")...]
-    @test_logs((:info, r"Trying to coerce from `Any"),
-               global v1c = coerce(v1, Multiclass))
-    @test_logs((:info, r"Trying to coerce from `Any"),
-               global v2c = coerce(v2, Multiclass))
-    @test scitype_union(v1c) == Union{Missing,Multiclass{2}}
+    v2 = Symbol.(collect("asdfghj"))
+    global v2c = @test_logs((:warn, r"Converting array"),
+                            coerce(v2, Multiclass))
     @test scitype_union(v2c) == Multiclass{7}
-
-    # NOTE: the original vector is of Anytype, so the categorical value is too
-    # Also when applying `categorical` to a vector of `Any`, the eltype will
-    # be Union{Missing,CategoricalValue}, for instance:
-    v = Any[1,2,3]
-    @test eltype(categorical(v)) == Union{Missing,CategoricalValue{Any,UInt32}}
-    # This justifies the following:
-    @test eltype(v1c) <: Union{Missing,CategoricalValue{Any}}
-    @test eltype(v2c) <: Union{Missing,CategoricalValue{Any}}
+    @test eltype(v2c) <: Union{Missing,CategoricalValue{String}}
 
     # normal behaviour
     v1 = categorical([1,2,1,2,1,2,missing])
