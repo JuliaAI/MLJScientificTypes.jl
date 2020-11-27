@@ -9,19 +9,28 @@ function coerce(v::Arr{T},
                 ::Type{T2};
                 verbosity::Int=1, tight::Bool=false
                 ) where T <: Union{SupportedTypes, Missing} where T2 <: Union{Missing,Finite}
-    v    = _check_tight(v, T, tight)
-    vcat = categorical(v, ordered=nonmissing(T2)<:OrderedFactor)
+    v1    = _tighten_if_needed(v, T, tight)
+    vcat = categorical(v1, ordered=nonmissing(T2)<:OrderedFactor)
     return _finalize_finite_coerce(vcat, verbosity, T2, T)
 end
 
 # Arr{T} -> Finite for all other types:
 function coerce(v::Arr{T}, ::Type{T2};
-                verbosity::Int=1, tight::Bool=false
+                verbosity::Int=1, tight::Bool=true
                 ) where T where T2 <: Union{Missing,Finite}
+    tight || verbosity < 0 ||
+        @warn "Forcing `tight=true`, as `$T` unsupported by "*
+        "CategoricalArrays. "
+    v1 = _tighten_if_needed(v, T, true)
+    if v1 isa Arr{<:Union{SupportedTypes, Missing}}
+        vcat = categorical(v1, ordered=nonmissing(T2)<:OrderedFactor)
+        return _finalize_finite_coerce(vcat, verbosity, T2, T)
+    end
     verbosity < 0 || @warn "Converting array elements to strings before "*
-        "wrapping in a `CategoricalArray`, as `$T` unsupported. "
-    v_str = string.(v)
-    v_str    = _check_tight(v_str, T, tight)
+        "wrapping in a `CategoricalArray`, as `$T` unsupported by "*
+        "CategoricalArrays. "
+#   error("######################## GOT YOU ##########################")
+    v_str = string.(v1)
     vcat = categorical(v_str, ordered=nonmissing(T2)<:OrderedFactor)
     return _finalize_finite_coerce(vcat, verbosity, T2, T)
 end
@@ -30,7 +39,7 @@ end
 function coerce(v::CArr{T}, ::Type{T2};
                 verbosity::Int=1, tight::Bool=false
                 ) where T where T2 <: Union{Missing,Finite}
-    v = _check_tight(v, T, tight)
+    v = _tighten_if_needed(v, T, tight)
     return _finalize_finite_coerce(v, verbosity, T2, T)
 end
 
@@ -41,7 +50,7 @@ end
 function coerce(y::Arr{T}, T2::Type{<:Union{Missing,Count}};
                 verbosity::Int=1, tight::Bool=false
                 ) where T <: Union{Missing,Integer}
-    y = _check_tight(y, T, tight)
+    y = _tighten_if_needed(y, T, tight)
     _check_eltype(y, T2, verbosity)
     return y
 end
@@ -50,7 +59,7 @@ end
 function coerce(y::Arr{T}, T2::Type{<:Union{Missing,Count}};
                 verbosity::Int=1, tight::Bool=false
                 ) where T <: Union{Missing,Real}
-    y = _check_tight(y, T, tight)
+    y = _tighten_if_needed(y, T, tight)
     _check_eltype(y, T2, verbosity)
     return _int.(y)
 end
@@ -59,7 +68,7 @@ end
 function coerce(y::Arr{T}, T2::Type{<:Union{Missing,Continuous}};
                 verbosity::Int=1, tight::Bool=false
                 ) where T <: Union{Missing,AbstractFloat}
-    y = _check_tight(y, T, tight)
+    y = _tighten_if_needed(y, T, tight)
     _check_eltype(y, T2, verbosity)
     return y
 end
@@ -68,7 +77,7 @@ end
 function coerce(y::Arr{T}, T2::Type{<:Union{Missing,Continuous}};
                 verbosity::Int=1, tight::Bool=false
                 ) where T <: Union{Missing,Real}
-    y = _check_tight(y, T, tight)
+    y = _tighten_if_needed(y, T, tight)
     _check_eltype(y, T2, verbosity)
     return float(y)
 end
@@ -90,7 +99,7 @@ const MaybeNumber = Union{Missing,AbstractChar,AbstractString}
 function coerce(y::Arr{T}, T2::Type{<:Union{Missing,C}};
                 verbosity::Int=1, tight::Bool=false
                 ) where T <: MaybeNumber where C <: Infinite
-    y = _check_tight(y, T, tight)
+    y = _tighten_if_needed(y, T, tight)
     _check_eltype(y, T2, verbosity)
     C == Count && return _int.(y)
     return _float.(y)
@@ -171,14 +180,14 @@ function _check_eltype(y, T, verb)
     E >: Missing && verb > 0 && _coerce_missing_warn(T, E)
 end
 
-function _check_tight(v::Arr, T, tight)
+function _tighten_if_needed(v::Arr, T, tight)
     if T >: Missing && tight && findfirst(ismissing, v) === nothing
         v = identity.(v)
     end
     return v
 end
 
-function _check_tight(v::CArr, T, tight)
+function _tighten_if_needed(v::CArr, T, tight)
     if T >: Missing && tight && findfirst(ismissing, v) === nothing
         v = get.(v)
     end

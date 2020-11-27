@@ -17,13 +17,13 @@
     @test coerce(x, Continuous) == [1.0,2.0,1.0,2.0]
     y = [missing, 1, 2]
     x = y[2:end]
-    c = MLJScientificTypes._check_tight(x, eltype(x), true)
+    c = MLJScientificTypes._tighten_if_needed(x, eltype(x), true)
     @test c == [1, 2]
     @test eltype(c) == Int
     y = categorical([missing,1,2])
     x = y[2:end]
     @test eltype(x) >: Missing
-    c = MLJScientificTypes._check_tight(x, eltype(x), true)
+    c = MLJScientificTypes._tighten_if_needed(x, eltype(x), true)
     @test c == [1,2]
     @test eltype(c) == Int
     c = coerce(x, OrderedFactor, tight=true)

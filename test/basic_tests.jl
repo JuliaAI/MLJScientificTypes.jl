@@ -234,6 +234,9 @@ end
     @test scitype_union(v2c) == Multiclass{7}
     @test eltype(v2c) <: Union{Missing,CategoricalValue{String}}
 
+    v3 = Any[1, 2, 3]
+    coerce(v3, Multiclass) # should be no warning here
+
     # normal behaviour
     v1 = categorical([1,2,1,2,1,2,missing])
     v2 = collect("aksldjfalsdjkfslkjdfalksjdf")
