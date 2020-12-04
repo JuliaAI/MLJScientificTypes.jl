@@ -1,8 +1,8 @@
 # MLJScientificTypes.jl
 
-| [MacOS/Linux] | Coverage | Documentation |
+| Linux | Coverage | Documentation |
 | :-----------: | :------: | :-----------: |
-| [![Build Status](https://travis-ci.org/alan-turing-institute/MLJScientificTypes.jl.svg?branch=master)](https://travis-ci.org/alan-turing-institute/MLJScientificTypes.jl) | [![codecov.io](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl/coverage.svg?branch=master)](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl?branch=master) | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://alan-turing-institute.github.io/MLJScientificTypes.jl/dev)
+| [![Build Status](https://github.com/alan-turing-institute/MLJScientificTypes.jl/workflows/CI/badge.svg)](https://github.com/alan-turing-institute/MLJScientificTypes.jl/actions) | [![codecov.io](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl/coverage.svg?branch=master)](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl?branch=master) | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://alan-turing-institute.github.io/MLJScientificTypes.jl/dev)
 
 Implementation of a convention for [scientific
 types](https://github.com/alan-turing-institute/ScientificTypes.jl),
