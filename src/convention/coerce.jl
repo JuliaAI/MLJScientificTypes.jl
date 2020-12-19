@@ -1,4 +1,18 @@
 # ------------------------------------------------------------------------
+
+# fallback method for coercing `AbstractArrays` to instances of a given MLJ
+# scitype `T<:Union{Missing, <:ST.Known}`.
+# This fallback fixes issue #39 
+coerce(X::AbstractArray, ::Type{T}; kw...) where {T<:Union{Missing, ST.Known}} =
+    throw(CoercionError("Coercion of `$(typeof(X))` type `AbstractArray` to an instance"*
+    " of elscitype `$T` isn't supported."))
+
+# general fallback method for coercing `AbstractArrays` to scitype `T`
+coerce(X::AbstractArray, ::Type{T}; kw...) where {T} =
+    throw(CoercionError("$(typeof(X))` type `AbstractArray`s can only be coerced"*
+    " to instances of elscitype `<:$(Union{Missing, ST.Known})`"))
+
+# ------------------------------------------------------------------------    
 # FINITE
 
 # Supported types for CategoricalArray{T} under CategoricalArrays 0.9:

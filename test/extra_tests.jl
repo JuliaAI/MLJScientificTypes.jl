@@ -29,4 +29,7 @@ end
    @test scitype(df) == Table{Union{AbstractArray{Multiclass{3},1}, AbstractArray{OrderedFactor{1},1}}}
 
    @test_throws MLJScientificTypes.CoercionError coerce!(randn(5, 5))
+   @test_throws ArgumentError coerce!(df, Count())
+   @test_throws ArgumentError coerce!(df, Dict(:x=>Count(), :y=>Multiclass))
+   @test_throws ArgumentError coerce!(df, :x=>Count(), :y=>Multiclass)
 end

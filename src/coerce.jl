@@ -8,7 +8,7 @@ as a dictionary whose keys are names and values are scientific types:
 
 ```
 coerce(X, col1=>scitype1, col2=>scitype2, ... ; verbosity=1)
-coerce(X, d::AbstractDict; verbosity=1)
+coerce(X, d::AbstractDict{Symbol, <:Type}; verbosity=1)
 ```
 
 One can also specify pairs of type `T1=>T2` in which case all columns with
@@ -44,7 +44,18 @@ coerce(X, a...; kw...) = coerce(Val(ST.trait(X)), X, a...; kw...)
 coerce(::Val{:other}, X, a...; kw...) =
     throw(CoercionError("`coerce` is undefined for non-tabular data."))
 
-function coerce(::Val{:table}, X, types_dict::AbstractDict; kw...)
+coerce(::Val{:table}, X, types_dict::AbstractDict; kw...) = 
+    throw(ArgumentError("dictionary containing specifications must be an instance"*
+            " of type `AbstractDict{Symbol, <:Type}` such that the keys are "*"
+            column names and values are scientific types."*
+            " Eg. `Dict(:cats=>Continuous, :dogs=>Textual`"))
+
+coerce(::Val{:table}, X, specs...; kw...) = 
+    throw(ArgumentError("Invalid `specs` in `coerce(X, specs...;  kw...)`. The specifications "*
+      "must be given as a a bunch of `colnameortype=>Scitype` pairs or as a dictionary "*
+      "whose keys are names and values are scientific types."))
+            
+function coerce(::Val{:table}, X, types_dict::AbstractDict{Symbol, <:Type}; kw...)
     isempty(types_dict) && return X
     names  = schema(X).names
     X_ct   = Tables.columntable(X)
@@ -59,9 +70,12 @@ struct CoercionError <: Exception
     m::String
 end
 
-function _coerce_col(X, name, types_dict::AbstractDict; kw...)
-    y = getproperty(X, name)
-    haskey(types_dict, name) && return coerce(y, types_dict[name]; kw...)
+function _coerce_col(Xcol, name, types_dict::AbstractDict{Symbol, <:Type}; kw...)
+    y = Tables.getcolumn(Xcol, name)
+    if haskey(types_dict, name)
+        coerce_type = types_dict[name]
+        return coerce(y, coerce_type; kw...)
+    end
     return y
 end
 
@@ -131,7 +145,18 @@ coerce!(X, a...;  kw...) = coerce!(Val(ST.trait(X)), X, a...; kw...)
 coerce!(::Val{:other}, X, a...; kw...) =
     throw(CoercionError("`coerce!` is undefined for non-tabular data."))
 
-function coerce!(::Val{:table}, X, types_dict::AbstractDict; kw...)
+coerce!(::Val{:table}, X, types_dict::AbstractDict; kw...) = 
+    throw(ArgumentError("dictionary containing specifications must be an instance"*
+     " of type `AbstractDict{Symbol, <:Type}` such that the keys are "*
+     "column names and values are scientific types."*
+     " Eg. `Dict(:cats=>Continuous, :dogs=>Textual`"))
+
+coerce!(::Val{:table}, X, specs...; kw...) = 
+    throw(ArgumentError("Invalid `specs` in `coerce!(X, specs...;  kw...)`. The specifications "*
+      "must be given as a a bunch of `colnameortype=>Scitype` pairs or as a dictionary "*
+      "whose keys are names and values are scientific types."))
+                  
+function coerce!(::Val{:table}, X, types_dict::AbstractDict{Symbol, <:Type}; kw...)
     # DataFrame --> coerce_df!
     if is_type(X, :DataFrames, :DataFrame)
         return coerce_df!(X, types_dict; kw...)
@@ -147,12 +172,13 @@ end
 """
     coerce_df!(df, pairs...; kw...)
 
-In place coercion for a dataframe.
+In place coercion for a dataframe.(Unexported method)
 """
-function coerce_df!(df, tdict::AbstractDict; kw...)
+function coerce_df!(df, tdict::AbstractDict{Symbol, <:Type}; kw...)
     names = schema(df).names
     for name in names
         name in keys(tdict) || continue
+        coerce_type = tdict[name] 
         # for DataFrames >= 0.19 df[!, name] = coerce(df[!, name], types(name))
         # but we want something that works more robustly... even for older
         # DataFrames; the only way to do this is to use the
@@ -160,12 +186,13 @@ function coerce_df!(df, tdict::AbstractDict; kw...)
         # a deprecation warning... metaprogramming to the rescue.
         name_str = "$name"
         ex = quote
-            $df.$name = coerce($df.$name, $tdict[Symbol($name_str)], $kw...)
+            $df.$name = coerce($df.$name, $coerce_type, $kw...)
         end
         eval(ex)
     end
     return df
 end
+
 
 """
     is_type(X, spkg, stype)
