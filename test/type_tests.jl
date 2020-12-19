@@ -29,6 +29,11 @@
     @test s1.scitypes == (Continuous, Count)
     @test s1.types == (Float64, Int64)
     @test s.nrows == 5
+    
+    #issue 47
+    X2 = ((x=rand(3), y=rand(3)),)
+    s2 = schema(X2)
+    @test s2 === nothing
 end
 
 @testset "csvfile" begin
