@@ -60,6 +60,7 @@ schema(X, ::Val{:other}; kw...) =
 
 function schema(X, ::Val{:table}; kw...)
     sch    = Tables.schema(X)
+    sch === nothing && return nothing
     Xcol   = Tables.columntable(X)
     names  = sch.names
     types  = Tuple{sch.types...}
