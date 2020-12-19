@@ -30,7 +30,6 @@
     @test s1.types == (Float64, Int64)
     @test s.nrows == 5
 end
-end
 
 @testset "csvfile" begin
     X = (x = rand(4), )
