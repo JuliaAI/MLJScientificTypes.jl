@@ -21,6 +21,19 @@
     @test MLJScientificTypes._nrows(X) == 5
     @test MLJScientificTypes._nrows(()) == 0
     @test MLJScientificTypes._nrows((i for i in 1:7)) == 7
+    
+    # PR #61 "scitype checks for `Tables.DictColumn`"
+    X1 = Dict(:a=>rand(5), :b=>rand(Int, 5))
+    s1 = schema(X1)
+    @test info(X1) == schema(X1)
+    @test s1.scitypes == (Continuous, Count)
+    @test s1.types == (Float64, Int64)
+    @test s.nrows == 5
+    
+    #issue 47
+    X2 = ((x=rand(3), y=rand(3)),)
+    s2 = schema(X2)
+    @test s2 === nothing
 end
 
 @testset "csvfile" begin
