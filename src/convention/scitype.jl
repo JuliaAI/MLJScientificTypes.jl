@@ -32,9 +32,9 @@ end
 
 function ST.scitype(X, ::MLJ, ::Val{:table}; kw...)
     Xcol = Tables.columns(X)
-    col_names = propertynames(Xcol)
+    col_names = Tables.columnnames(Xcol)
     types = map(col_names) do name
-        scitype(getproperty(Xcol, name); kw...)
+        scitype(Tables.getcolumn(Xcol, name); kw...)
     end
     return Table{Union{types...}}
 end
