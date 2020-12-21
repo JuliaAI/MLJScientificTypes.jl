@@ -112,18 +112,18 @@ end
 
 @testset "Type coercion" begin
     X = (x=10:10:44, y=1:4, z=collect("abcd"))
-    
+
     @test_throws ArgumentError coerce(X, Count())
     @test_throws ArgumentError coerce(X, Dict(:x=>Count(), :z=>Multiclass))
     @test_throws ArgumentError coerce(X, :x=>Count(), :z=>Multiclass)
-    
+
     # test fix for issue 39
     y = collect(Int64, 1:5)
     @test_throws MLJScientificTypes.CoercionError coerce(y, Float64)
     @test_throws MLJScientificTypes.CoercionError coerce(y, Textual)
     @test_throws MLJScientificTypes.CoercionError coerce(X, :x=>Float64)
     @test_throws MLJScientificTypes.CoercionError coerce(X, :x=>Textual)
-    
+
     types = Dict(:x => Continuous, :z => Multiclass)
     X_coerced = coerce(X, types)
     @test X_coerced ==  coerce(X, :x => Continuous, :z => Multiclass)
@@ -145,7 +145,7 @@ end
     @test X_coerced.x === X.x
     @test scitype_union(X_coerced.z) <: OrderedFactor
     @test X_coerced.z.pool.ordered
-    
+
     # Check no-op coercion
     y = rand(Float64, 5)
     @test coerce(y, Continuous) === y
