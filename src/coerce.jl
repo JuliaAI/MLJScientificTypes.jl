@@ -1,23 +1,26 @@
 """
-    coerce(A, ...; tight=false, verbosity=1)
+    coerce(A, specs...; tight=false, verbosity=1)
 
-Given a table `A`, return a copy of `A` ensuring that the scitype of the
-columns match new specifications.
-The specifications can be given as a a bunch of `colname=>Scitype` pairs or
-as a dictionary whose keys are names and values are scientific types:
+Given a table `A`, return a copy of `A`, ensuring that the element
+scitypes of the columns match the new specification, `specs`. There
+are three valid specifiations:
 
-```
-coerce(X, col1=>scitype1, col2=>scitype2, ... ; verbosity=1)
-coerce(X, d::AbstractDict; verbosity=1)
-```
+(i) one or more `column_name=>Scitype` pairs:
 
-One can also specify pairs of type `T1=>T2` in which case all columns with
-scientific element type subtyping `Union{T1,Missing}` will be coerced to the
-new specified scitype `T2`.
+    coerce(X, col1=>Sciyype1, col2=>Scitype2, ... ; verbosity=1)
 
-## Examples
+(ii) one or more `OldScitype=>NewScitype` pairs (`OldScitype` covering
+both the `OldScitype` and `Union{Missing,OldScitype}` cases):
 
-Specifiying (name, scitype) pairs:
+    coerce(X, OldScitype1=>NewSciyype1, OldScitype2=>NewScitype2, ... ; verbosity=1)
+
+(iii) a dictionary of scientific types keyed on column names:
+
+    coerce(X, d::AbstractDict{Symbol, <:Type}; verbosity=1)
+
+### Examples
+
+Specifiying  `column_name=>Scitype` pairs:
 
 ```
 using CategoricalArrays, DataFrames, Tables
@@ -28,7 +31,7 @@ Xc = coerce(X, :name=>Multiclass, :height=>Continuous, :rating=>OrderedFactor)
 schema(Xc).scitypes # (Multiclass, Continuous, OrderedFactor)
 ```
 
-Specifying (T1, T2) pairs:
+Specifying `OldScitype=>NewScitype` pairs:
 
 ```
 X  = (x = [1, 2, 3],
@@ -44,7 +47,29 @@ coerce(X, a...; kw...) = coerce(Val(ST.trait(X)), X, a...; kw...)
 coerce(::Val{:other}, X, a...; kw...) =
     throw(CoercionError("`coerce` is undefined for non-tabular data."))
 
-function coerce(::Val{:table}, X, types_dict::AbstractDict; kw...)
+
+_bad_dictionary() = throw(ArgumentError(
+    "A dictionary specifying a scitype conversion "*
+    "must have type `AbstractDict{Symbol, <:Type}`. It's keys must "*
+    "be column names and its values be scientific types. "*
+    "E.g., `Dict(:cats=>Continuous, :dogs=>Textual`. "))
+coerce(::Val{:table}, X, types_dict::AbstractDict; kw...) =
+    _bad_dictionary()
+
+_bad_specs() =
+        throw(ArgumentError(
+        "Invalid `specs` in `coerce(X, specs...;  kwargs...)`. "*
+        "Valid `specs` are: (i) one or more pairs of "*
+        "the form `column_name=>Scitype`; (ii) one or more pairs "*
+        "of the from `OldScitype=>NewScitype`; or (iii) a "*
+        "dictionary of scientific "*
+        "types keyed on column names. "))
+coerce(::Val{:table}, X, specs...; kw...) = _bad_specs()
+
+function coerce(::Val{:table},
+                X,
+                types_dict::AbstractDict{Symbol, <:Type};
+                kw...)
     isempty(types_dict) && return X
     names  = schema(X).names
     X_ct   = Tables.columntable(X)
@@ -59,9 +84,15 @@ struct CoercionError <: Exception
     m::String
 end
 
-function _coerce_col(X, name, types_dict::AbstractDict; kw...)
-    y = getproperty(X, name)
-    haskey(types_dict, name) && return coerce(y, types_dict[name]; kw...)
+function _coerce_col(Xcol,
+                     name,
+                     types_dict::AbstractDict{Symbol, <:Type};
+                     kw...)
+    y = Tables.getcolumn(Xcol, name)
+    if haskey(types_dict, name)
+        coerce_type = types_dict[name]
+        return coerce(y, coerce_type; kw...)
+    end
     return y
 end
 
@@ -125,13 +156,22 @@ Same as [`ScientificTypes.coerce`](@ref) except it does the modification in
 place provided `X` supports in-place modification (at the moment, only the
 DataFrame! does). An error is thrown otherwise. The arguments are the same as
 `coerce`.
+
 """
 coerce!(X, a...;  kw...) = coerce!(Val(ST.trait(X)), X, a...; kw...)
 
 coerce!(::Val{:other}, X, a...; kw...) =
     throw(CoercionError("`coerce!` is undefined for non-tabular data."))
 
-function coerce!(::Val{:table}, X, types_dict::AbstractDict; kw...)
+coerce!(::Val{:table}, X, types_dict::AbstractDict; kw...) =
+    _bad_dictionary()
+
+coerce!(::Val{:table}, X, specs...; kw...) = _bad_specs()
+
+function coerce!(::Val{:table},
+                 X,
+                 types_dict::AbstractDict{Symbol, <:Type};
+                 kw...)
     # DataFrame --> coerce_df!
     if is_type(X, :DataFrames, :DataFrame)
         return coerce_df!(X, types_dict; kw...)
@@ -147,12 +187,13 @@ end
 """
     coerce_df!(df, pairs...; kw...)
 
-In place coercion for a dataframe.
+In place coercion for a dataframe.(Unexported method)
 """
-function coerce_df!(df, tdict::AbstractDict; kw...)
+function coerce_df!(df, tdict::AbstractDict{Symbol, <:Type}; kw...)
     names = schema(df).names
     for name in names
         name in keys(tdict) || continue
+        coerce_type = tdict[name]
         # for DataFrames >= 0.19 df[!, name] = coerce(df[!, name], types(name))
         # but we want something that works more robustly... even for older
         # DataFrames; the only way to do this is to use the
@@ -160,12 +201,13 @@ function coerce_df!(df, tdict::AbstractDict; kw...)
         # a deprecation warning... metaprogramming to the rescue.
         name_str = "$name"
         ex = quote
-            $df.$name = coerce($df.$name, $tdict[Symbol($name_str)], $kw...)
+            $df.$name = coerce($df.$name, $coerce_type, $kw...)
         end
         eval(ex)
     end
     return df
 end
+
 
 """
     is_type(X, spkg, stype)
