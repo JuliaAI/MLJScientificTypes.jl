@@ -112,6 +112,18 @@ end
 
 @testset "Type coercion" begin
     X = (x=10:10:44, y=1:4, z=collect("abcd"))
+
+    @test_throws ArgumentError coerce(X, Count())
+    @test_throws ArgumentError coerce(X, Dict(:x=>Count(), :z=>Multiclass))
+    @test_throws ArgumentError coerce(X, :x=>Count(), :z=>Multiclass)
+
+    # test fix for issue 39
+    y = collect(Int64, 1:5)
+    @test_throws MLJScientificTypes.CoercionError coerce(y, Float64)
+    @test_throws MLJScientificTypes.CoercionError coerce(y, Textual)
+    @test_throws MLJScientificTypes.CoercionError coerce(X, :x=>Float64)
+    @test_throws MLJScientificTypes.CoercionError coerce(X, :x=>Textual)
+
     types = Dict(:x => Continuous, :z => Multiclass)
     X_coerced = coerce(X, types)
     @test X_coerced ==  coerce(X, :x => Continuous, :z => Multiclass)
@@ -147,7 +159,7 @@ end
     @test coerce(y, Count) === y
     y = rand(UInt32, 5)
     @test coerce(y, Count) === y
-    X_coerced = coerce(X, Dict())
+    X_coerced = coerce(X, Dict{Symbol, Type}())
     @test X_coerced.x === X.x
     @test X_coerced.z === X.z
     z = categorical(X.z)
