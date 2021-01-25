@@ -89,21 +89,5 @@ function Base.show(io::IO, ::MIME"text/plain", s::Schema)
     println(io, "_.nrows = $(s.nrows)")
 end
 
-"""
-    info(X)
-
-Return the metadata associated with some object `X`, typically a named tuple
-keyed on a set of object traits.
-
-*Notes on overloading:*: If the class of objects is detected by its type,
-`info` can be overloaded in the usual way.  If the class of objects is detected
-by the value of `ScientificTypes.trait(object)` - say if this value is
-`:some_symbol` - then one should define a method
-`info(object, ::Val{:some_symbol})`.
-"""
-info(X) = info(X, Val(trait(X)))
-
-# fallback
-info(X, ::Val{:other}) = nothing
-
+# overload StatisticalTraits function:
 info(X, ::Val{:table}) = schema(X)

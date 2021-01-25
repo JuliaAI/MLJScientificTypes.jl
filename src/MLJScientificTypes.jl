@@ -2,7 +2,14 @@ module MLJScientificTypes
 
 # Dependencies
 using ScientificTypes
-using Tables, CategoricalArrays, ColorTypes, PersistenceDiagramsBase, PrettyTables, Dates
+using Tables
+using CategoricalArrays
+using ColorTypes
+using PersistenceDiagramsBase
+using PrettyTables
+using Dates
+
+import StatisticalTraits.info
 
 # re-exports from ScientificTypes
 export Scientific, Found, Unknown, Known, Finite, Infinite,
@@ -12,8 +19,11 @@ export Scientific, Found, Unknown, Known, Finite, Infinite,
     ScientificTime
 export scitype, scitype_union, elscitype, nonmissing, trait
 
+# re-export from StatisticalTraits
+export info
+
 # exports
-export coerce, coerce!, autotype, schema, info
+export coerce, coerce!, autotype, schema
 
 # -------------------------------------------------------------
 # Abbreviations

@@ -1,5 +1,6 @@
 using Test, ScientificTypes, MLJScientificTypes, Random
-using Tables, CategoricalArrays, CSV, DataFrames, ColorTypes, PersistenceDiagramsBase
+using Tables, CategoricalArrays, CSV, DataFrames
+using ColorTypes, PersistenceDiagramsBase
 using Dates
 
 const Arr  = AbstractArray

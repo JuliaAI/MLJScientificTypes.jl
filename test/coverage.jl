@@ -30,9 +30,6 @@
     @test c == categorical([1,2])
     @test !(eltype(c) >: Missing)
 
-    X = (1, 2, 3)
-    @test info(X) === nothing
-
     # increase autotype coverage
     M = MLJScientificTypes
     @test M.string_to_multiclass(String, ["a","b"], 0) == String
