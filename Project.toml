@@ -19,7 +19,7 @@ ColorTypes = "^0.9,^0.10"
 PersistenceDiagramsBase = "^0.1"
 PrettyTables = "^0.8,^0.9,^0.10, 0.11"
 ScientificTypes = "^1.0"
-StatisticalTraits = "^0.1"
+StatisticalTraits = "0.1, 1.0"
 Tables = "^1.0"
 julia = "1"
 
