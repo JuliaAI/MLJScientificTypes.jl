@@ -82,8 +82,8 @@ function Base.show(io::IO, ::MIME"text/plain", s::Schema)
                 types=collect(s.types),
                 scitypes=collect(s.scitypes)
                 ))
-    header = ["_.names", "_.types", "_.scitypes"]
-    pretty_table(io, data, header;
+    header = (["_.names", "_.types", "_.scitypes"],)
+    pretty_table(io, data, header=header;
                  header_crayon=Crayon(bold=false),
                  alignment=:l)
     println(io, "_.nrows = $(s.nrows)")
