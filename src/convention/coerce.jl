@@ -208,7 +208,7 @@ end
 
 function _tighten_if_needed(v::CArr, T, tight)
     if T >: Missing && tight && findfirst(ismissing, v) === nothing
-        v = get.(v)
+        v = CategoricalArrays.DataAPI.unwrap.(v)
     end
     return v
 end

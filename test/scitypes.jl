@@ -241,7 +241,7 @@ end
 
 @testset "Extra tight" begin
     a = categorical(Any[1,2,3])
-    # calls get.
+    # calls DataAPI.unwrap:
     c = coerce(a, Multiclass; tight=true)
     @test elscitype(c) == Multiclass{3}
 end
