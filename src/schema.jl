@@ -70,7 +70,7 @@ function schema(X; kw...)
 end
 
 function _nrows(cols)
-    names = columnnames(cols)
+    names = Tables.columnnames(cols)
     return isempty(names) ? 0 : length(Tables.getcolumn(cols, names[1]))
 end
 
