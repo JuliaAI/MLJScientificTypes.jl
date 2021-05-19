@@ -59,7 +59,7 @@ schema(X, ::Val{:other}; kw...) =
     throw(ArgumentError("Cannot inspect the internal scitypes of "*
                         "a non-tabular object. "))
 
-function schema(X; kw...)
+function schema(X, ::Val{:table}; kw...)
     cols = Tables.columns(X)
     sch = Tables.schema(cols)
     sch === nothing && return nothing
