@@ -43,6 +43,7 @@ Base.propertynames(sch::Schema) = (:names, :types, :scitypes, :nrows)
     schema(X)
 
 Inspect the column types and scitypes of a tabular object.
+returns `nothing` if the column types and scitypes can't be inspected.
 
 ## Example
 
@@ -58,22 +59,19 @@ schema(X, ::Val{:other}; kw...) =
     throw(ArgumentError("Cannot inspect the internal scitypes of "*
                         "a non-tabular object. "))
 
-function schema(X, ::Val{:table}; kw...)
-    sch    = Tables.schema(X)
+function schema(X; kw...)
+    cols = Tables.columns(X)
+    sch = Tables.schema(cols)
     sch === nothing && return nothing
-    Xcol   = Tables.columntable(X)
-    names  = sch.names
-    types  = Tuple{sch.types...}
-    stypes = Tuple{(elscitype(getproperty(Xcol, n); kw...) for n in names)...}
-    return Schema(names, types, stypes, _nrows(X))
+    names = sch.names
+    types = Tuple{sch.types...}
+    stypes = Tuple{[elscitype(getcolumn(cols, n); kw...) for n in names]...}
+    return Schema(names, types, stypes, _nrows(cols))
 end
 
-function _nrows(X)
-    Tables.columnaccess(X) || return length(collect(X))
-    # if has columnaccess
-    cols = Tables.columntable(X)
-    !isempty(cols) || return 0
-    return length(cols[1])
+function _nrows(cols)
+    names = columnnames(cols)
+    return isempty(names) ? 0 : length(getcolumn(cols, names[1]))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", s::Schema)
