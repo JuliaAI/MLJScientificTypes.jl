@@ -65,13 +65,13 @@ function schema(X; kw...)
     sch === nothing && return nothing
     names = sch.names
     types = Tuple{sch.types...}
-    stypes = Tuple{[elscitype(getcolumn(cols, n); kw...) for n in names]...}
+    stypes = Tuple{[elscitype(Tables.getcolumn(cols, n); kw...) for n in names]...}
     return Schema(names, types, stypes, _nrows(cols))
 end
 
 function _nrows(cols)
     names = columnnames(cols)
-    return isempty(names) ? 0 : length(getcolumn(cols, names[1]))
+    return isempty(names) ? 0 : length(Tables.getcolumn(cols, names[1]))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", s::Schema)
