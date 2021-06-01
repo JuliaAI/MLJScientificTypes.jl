@@ -1,3 +1,12 @@
+struct MySchemalessTable{U, V}
+   x::Vector{U}
+   y::Vector{V}
+end
+    
+Tables.istable(::MySchemalessTable) = true
+Tables.columnaccess(::Type{MySchemalessTable}) = true
+Tables.columns(t::MySchemalessTable) = t
+
 @testset "Tables" begin
     X = (
         x = rand(5),
@@ -20,7 +29,6 @@
 
     @test MLJScientificTypes._nrows(X) == 5
     @test MLJScientificTypes._nrows(()) == 0
-    @test MLJScientificTypes._nrows((i for i in 1:7)) == 7
     
     # PR #61 "scitype checks for `Tables.DictColumn`"
     X1 = Dict(:a=>rand(5), :b=>rand(Int, 5))
@@ -31,7 +39,7 @@
     @test s.nrows == 5
     
     #issue 47
-    X2 = ((x=rand(3), y=rand(3)),)
+    X2 = MySchemalessTable(rand(3), rand(3))
     s2 = schema(X2)
     @test s2 === nothing
 end
