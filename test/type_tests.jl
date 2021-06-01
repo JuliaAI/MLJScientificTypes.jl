@@ -1,3 +1,12 @@
+struct MySchemalessTable{U, V}
+   x::Vector{U}
+   y::Vector{V}
+end
+    
+Tables.istable(::MySchemalessTable) = true
+Tables.columnaccess(::Type{MySchemalessTable}) = true
+Tables.columns(t::MySchemalessTable) = t
+
 @testset "Tables" begin
     X = (
         x = rand(5),
@@ -30,15 +39,6 @@
     @test s.nrows == 5
     
     #issue 47
-    struct MySchemalessTable{U, V}
-        x::Vector{U}
-        y::Vector{V}
-    end
-    
-    Tables.istable(::MySchemalessTable) = true
-    Tables.columnaccess(::Type{MySchemalessTable}) = true
-    Tables.columns(t::MySchemalessTable) = t
-
     X2 = MySchemalessTable(rand(3), rand(3))
     s2 = schema(X2)
     @test s2 === nothing
