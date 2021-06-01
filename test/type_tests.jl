@@ -35,6 +35,7 @@
         y::Vector{V}
     end
     
+    Tables.istable(::MySchemalessTable) = true
     Tables.columnaccess(::Type{MySchemalessTable}) = true
     Tables.columns(t::MySchemalessTable) = t
 
