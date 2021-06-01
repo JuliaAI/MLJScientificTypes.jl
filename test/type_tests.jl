@@ -30,7 +30,15 @@
     @test s.nrows == 5
     
     #issue 47
-    X2 = ((x=rand(3), y=rand(3)),)
+    struct MySchemalessTable{U, V}
+        x::Vector{U}
+        y::Vector{V}
+    end
+    
+    Tables.columnaccess(::Type{MySchemalessTable}) = true
+    Tables.columns(t::MySchemalessTable) = t
+
+    X2 = MySchemalessTable(rand(3), rand(3))
     s2 = schema(X2)
     @test s2 === nothing
 end
