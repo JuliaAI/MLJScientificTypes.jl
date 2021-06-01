@@ -20,7 +20,6 @@
 
     @test MLJScientificTypes._nrows(X) == 5
     @test MLJScientificTypes._nrows(()) == 0
-    @test MLJScientificTypes._nrows((i for i in 1:7)) == 7
     
     # PR #61 "scitype checks for `Tables.DictColumn`"
     X1 = Dict(:a=>rand(5), :b=>rand(Int, 5))
