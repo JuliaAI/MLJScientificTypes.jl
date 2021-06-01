@@ -50,6 +50,7 @@ end
 
     # MULTICLASS
     @test scitype(categorical(1:4))         == Vec{Multiclass{4}}
+    @test scitype(view(categorical(1:4), 1:3)) == Vec{Multiclass{4}}
     @test scitype(Any[categorical(1:4)...]) == Vec{Multiclass{4}}
     @test scitype(categorical([1, missing, 3])) ==
         Vec{Union{Multiclass{2},Missing}}

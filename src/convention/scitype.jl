@@ -21,7 +21,10 @@ function ST.scitype(c::Cat, ::MLJ)
     return ifelse(c.pool.ordered, OrderedFactor{nc}, Multiclass{nc})
 end
 
-function ST.scitype(A::CArr{T,N}, ::MLJ) where {T,N}
+const CatArrOrSub{T,N} =
+    Union{CategoricalArray{T,N},SubArray{<:Any,<:Any,<:CategoricalArray{T,N}}}
+
+function ST.scitype(A::CatArrOrSub{T,N}, ::MLJ) where {T,N}
     nlevels = length(levels(A))
     S = ifelse(isordered(A), OrderedFactor{nlevels}, Multiclass{nlevels})
     T >: Missing && (S = Union{S,Missing})
