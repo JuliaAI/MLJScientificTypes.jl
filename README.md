@@ -2,18 +2,18 @@
 
 | Linux | Coverage | Documentation |
 | :-----------: | :------: | :-----------: |
-| [![Build Status](https://github.com/alan-turing-institute/MLJScientificTypes.jl/workflows/CI/badge.svg)](https://github.com/alan-turing-institute/MLJScientificTypes.jl/actions) | [![codecov.io](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl/coverage.svg?branch=master)](http://codecov.io/github/alan-turing-institute/MLJScientificTypes.jl?branch=master) | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://alan-turing-institute.github.io/MLJScientificTypes.jl/dev)
+| [![Build Status](https://github.com/JuliaAI/MLJScientificTypes.jl/workflows/CI/badge.svg)](https://github.com/JuliaAI/MLJScientificTypes.jl/actions) | [![codecov.io](http://codecov.io/github/JuliaAI/MLJScientificTypes.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaAI/MLJScientificTypes.jl?branch=master) | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaAI.github.io/MLJScientificTypes.jl/dev)
 
 Implementation of a convention for [scientific
-types](https://github.com/alan-turing-institute/ScientificTypes.jl),
+types](https://github.com/JuliaAI/ScientificTypes.jl),
 as used in the [MLJ
-universe](https://github.com/alan-turing-institute/MLJ.jl).
+universe](https://github.com/JuliaAI/MLJ.jl).
 
 **Important note.** While this document refers to the *MLJ convention*,
 this convention could (and, hopefully, will) be adopted in
 statistical/scientific software outside of the MLJ project. Of its
 dependencies, only the tiny package
-[ScientificTypes.jl](https://github.com/alan-turing-institute/ScientificTypes.jl)
+[ScientificTypes.jl](https://github.com/JuliaAI/ScientificTypes.jl)
 has any direct connection to MLJ.
 
 This package makes a distinction between **machine type** and
@@ -23,7 +23,7 @@ This package makes a distinction between **machine type** and
   the object (for instance, `Float64`).
 
 * The _scientific type_ is one of the types defined in
-  [ScientificTypes.jl](https://github.com/alan-turing-institute/ScientificTypes.jl)
+  [ScientificTypes.jl](https://github.com/JuliaAI/ScientificTypes.jl)
   reflecting how the object should be _interpreted_ (for instance,
   `Continuous` or `Multiclass`).
 
@@ -47,7 +47,7 @@ Pkg.add(MLJScientificTypes)
 This repository has two kinds of users in mind:
  
 - users of software in the [MLJ
-  universe](https://github.com/alan-turing-institute/MLJ.jl) seeking a
+  universe](https://github.com/JuliaAI/MLJ.jl) seeking a
   deeper understanding of the use of scientific types and associated
   tools; *these users do not need to directly install this package*
   but may find its documentation helpful
@@ -61,7 +61,7 @@ This repository has two kinds of users in mind:
 
 Developers interested in implementing a different convention will
 instead import [Scientific
-Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl),
+Types.jl](https://github.com/JuliaAI/ScientificTypes.jl),
 following the documentation there, possibly using this repo as a
 template.
 
@@ -69,7 +69,7 @@ template.
 
 The module `MLJScientificTypes` defined in this repo rexports the
 scientific types and associated methods defined in [Scientific
-Types.jl](https://github.com/alan-turing-institute/ScientificTypes.jl)
+Types.jl](https://github.com/JuliaAI/ScientificTypes.jl)
 and provides:
 
 - a collection of `ScientificTypes.scitype` definitions that
@@ -85,7 +85,7 @@ and provides:
 ## Very quick start
 
 For more information and examples please refer to [the
-manual](https://alan-turing-institute.github.io/MLJScientificTypes.jl/dev).
+manual](https://JuliaAI.github.io/MLJScientificTypes.jl/dev).
 
 ```julia
 using MLJScientificTypes, DataFrames

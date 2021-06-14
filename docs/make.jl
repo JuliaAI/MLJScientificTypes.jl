@@ -13,6 +13,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/alan-turing-institute/MLJScientificTypes.jl",
+    repo = "github.com/JuliaAI/MLJScientificTypes.jl",
     push_preview = true
 )
