@@ -4,6 +4,21 @@
 | :-----------: | :------: | :-----------: |
 | [![Build Status](https://github.com/JuliaAI/MLJScientificTypes.jl/workflows/CI/badge.svg)](https://github.com/JuliaAI/MLJScientificTypes.jl/actions) | [![codecov.io](http://codecov.io/github/JuliaAI/MLJScientificTypes.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaAI/MLJScientificTypes.jl?branch=master) | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaAI.github.io/MLJScientificTypes.jl/dev)
 
+**This repository is now deprecated.** The last supported release is
+MLJScientificTypes
+0.4.8. [ScientificTypes](https://github.com/JuliaAI/ScientificTypes.jl)
+2.0 and higher now serves the original purpose of MLJScientificTypes,
+implementing a scientific type convention called `DefaultConvention`
+(but previously known as the `MLJ` convention). 
+
+The scientific types themselves (on which all scientific type
+conventions are based) are now defined in
+[ScientificTypesBase](https://github.com/JuliaAI/ScientificTypesBase.jl). Previously
+ScientificTypes (versions 1.1.1 and lower) defined the basic types and
+API.
+
+---
+
 Implementation of a convention for [scientific
 types](https://github.com/JuliaAI/ScientificTypes.jl),
 as used in the [MLJ
